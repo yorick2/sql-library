@@ -5,7 +5,7 @@ namespace Yorick2\Importer;
 class OneManyImporter
 {
     /**
-     * Import a tsv or csv into a one many database table pair
+     * Import a tsv or csv, one-one relationships into a many-many database
      *
      * @param $tempTable string e.g. 'temp'
      * @param $fileDelimiter string e.g. '\t'
@@ -45,13 +45,13 @@ class OneManyImporter
                 NATURAL JOIN `$destinationTable2`
                 LIMIT 0;
 
-        CREATE TRIGGER `from_load_data` AFTER INSERT ON `$tempTable`
+        CREATE TRIGGER `from_load_data_to_table1` AFTER INSERT ON `$tempTable`
         FOR EACH ROW
            INSERT INTO `$destinationTable1` ($columnsForTable1)
              VALUES ($valueColumnsForTable1)
              ON DUPLICATE KEY UPDATE `Hebrew` = VALUES(`Hebrew`);
 
-        CREATE TRIGGER `from_load_data_2` AFTER INSERT ON `$tempTable`
+        CREATE TRIGGER `from_load_data_to_table2` AFTER INSERT ON `$tempTable`
         FOR EACH ROW
            INSERT INTO `$destinationTable2` ($columnsForTable2)
              SELECT $valueColumnsForTable2
@@ -66,8 +66,8 @@ class OneManyImporter
         
         # cleanup
         DROP TABLE IF EXISTS `$tempTable`;
-        DROP TRIGGER IF EXISTS `from_load_data`;
-        DROP TRIGGER IF EXISTS `from_load_data_2`;
+        DROP TRIGGER IF EXISTS `from_load_data_to_table1`;
+        DROP TRIGGER IF EXISTS `from_load_data_to_table2`;
 EOF;
     }
 }
