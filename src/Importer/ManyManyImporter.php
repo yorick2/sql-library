@@ -8,10 +8,6 @@ class ManyManyImporter
      * Import a tsv or csv into a many-many database table pair,
      * where there are only one of each. This does happen
      *
-     * @param string $tempTable e.g. 'temp'
-     * @param string $fileDelimiter e.g. '\t'
-     * @param string $filePath file path e.g. '__DIR__./src/test.tsv'
-     * @param string $fileColumns e.g. 'column1,column2'
      * @param string $pivotTable string e.g. 'table1_table2'
      * @param string $pivotTableColumns e.g. '`table1_id`,`table2_id`'
      * @param string $destinationTable1 e.g. 'table1'
@@ -20,23 +16,25 @@ class ManyManyImporter
      * @param string $destinationTable2 e.g. 'table2'
      * @param string $columnsForTable2 e.g. '`table1_id`,`column3`,`column4`'
      * @param string $valueColumnsForTable2 e.g. 'id, NEW.`column3`,NEW.`column4`'
-     * @param string $link e.g. 'WHERE `sometext` = NEW.`sometext`'
+     * @param string $filePath file path e.g. '__DIR__./src/test.tsv'
+     * @param string $fileColumns e.g. 'column1,column2'
+     * @param string $fileDelimiter e.g. '\t'
+     * @param string $tempTable e.g. 'temp'
      * @return string
      */
     static function getSimpleManyManySqlText(
-        $tempTable='temp',
-        $fileDelimiter='\t',
-        string $filePath,
         string $pivotTable,
         string $pivotTableColumns,
-        string $fileColumns,
         string $destinationTable1,
         string $columnsForTable1,
         string $valueColumnsForTable1,
         string $destinationTable2,
         string $columnsForTable2,
         string $valueColumnsForTable2,
-        string $link
+        string $filePath,
+        string $fileColumns,
+        string $fileDelimiter='\t',
+        string $tempTable='temp'
     )
     {
         return <<<EOF

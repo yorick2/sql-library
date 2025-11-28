@@ -1,16 +1,12 @@
 <?php
 
-namespace PaulMillband\Importer;
+namespace PaulMillband\SqlLibrary\Importer;
 
 class OneManyImporter
 {
     /**
      * Import a tsv or csv, one-one relationships into a many-many database
      *
-     * @param $tempTable string e.g. 'temp'
-     * @param $fileDelimiter string e.g. '\t'
-     * @param $filePath string file path e.g. '__DIR__./src/test.tsv'
-     * @param $tableColumns string e.g. 'column1,column2'
      * @param $destinationTable1 string e.g. 'table1'
      * @param $columnsForTable1 string e.g. '`column1`,`column2`'
      * @param $valueColumnsForTable1 string e.g. 'NEW.`column1`,NEW.`column2`'
@@ -18,20 +14,24 @@ class OneManyImporter
      * @param $columnsForTable2 string e.g. '`table1_id`,`column3`,`column4`'
      * @param $valueColumnsForTable2 string e.g. 'id, NEW.`column3`,NEW.`column4`'
      * @param $link string e.g. 'WHERE `sometext` = NEW.`sometext`'
+     * @param $filePath string file path e.g. '__DIR__./src/test.tsv'
+     * @param $fileColumns string e.g. 'column1,column2'
+     * @param $fileDelimiter string e.g. '\t'
+     * @param $tempTable string e.g. 'temp'
      * @return string
      */
     static function getSqlText(
-        $tempTable='temp',
-        $fileDelimiter='\t',
-        string $filePath,
-        string $tableColumns,
         string $destinationTable1,
         string $columnsForTable1,
         string $valueColumnsForTable1,
         string $destinationTable2,
         string $columnsForTable2,
         string $valueColumnsForTable2,
-        string $link
+        string $link,
+        string $filePath,
+        string $fileColumns,
+        string $fileDelimiter='\t',
+        string $tempTable='temp'
     )
     {
         return <<<EOF
@@ -62,7 +62,7 @@ class OneManyImporter
         IGNORE INTO TABLE `$tempTable`
         FIELDS TERMINATED BY '$fileDelimiter'
         IGNORE 1 LINES
-        ($tableColumns);
+        ($fileColumns);
         
         # cleanup
         DROP TABLE IF EXISTS `$tempTable`;
