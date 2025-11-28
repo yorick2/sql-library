@@ -100,8 +100,10 @@ EOF;
      * @param string $pivotTableValues e.g. 'NEW.`table1_id`,NEW.`table2_id`'
      * @param string $table1 e.g. 'table1'
      * @param string $table1SplitColumn e.g. '`column1`'
-     * @param string $remainingColumnsForTable1 e.g. '`column1`,`column2`'
-     * @param string $linkColumn pivot table column for other table that is duplicated for split rows e.g. 'table2_id'
+     * @param string $remainingColumnsForTable1 DO NOT include the id column e.g. '`column2`,`column3`'
+     * @param string $linkColumn pivot table column for other table that is duplicated for split rows
+     * e.g. if column2 is comma seperated too "UPDATE `temp` SET `column2` = REGEXP_REPLACE(`column2`,',[^,]*$','');"
+     * @param string $additionalLoopCommand additional commands to add near the end of each loop e.g. 'Column2'
      * @param string $tempTable e.g. 'temp'
      * @param int $maxIterations max amount of rows to do to ensure no infinite loops
      * @return string
@@ -114,6 +116,7 @@ EOF;
         string $table1SplitColumn,
         string $remainingColumnsForTable1,
         string $linkColumn,
+        string $additionalLoopCommand,
         string $tempTable='temp',
         int    $maxIterations=10000
     )
@@ -142,7 +145,7 @@ EOF;
             DECLARE i INT DEFAULT 0;
             DECLARE row_count INT DEFAULT 1;
             WHILE i < $maxIterations AND row_count > 0 DO
-                    # infinate loop safeguard
+                    # infinite loop safeguard
                     SET i = i + 1;
                     # add first word in each row to the word & pivot tables
                     # note: there is a trigger 'temp_add_to_pivot_table' defined above, and fired for each row inserted into `$table1`
@@ -155,13 +158,15 @@ EOF;
                     # remove current word
                     UPDATE `$tempTable`
                         SET `$table1SplitColumn` = REGEXP_REPLACE(`$table1SplitColumn`,',[^,]*$','');
+                    # additional loop commands
+                      $additionalLoopCommand
                     # count comma entries
                     SET row_count = (SELECT COUNT(*) FROM `$tempTable` WHERE `$table1SplitColumn` LIKE '%,%' LIMIT 3);
                 END WHILE;
         END$$
         DELIMITER ;
 
-        call insert_split_by_comma();
+        CALL temp_insert_split_by_comma();
 
         DROP PROCEDURE IF EXISTS temp_insert_split_by_comma;
 
