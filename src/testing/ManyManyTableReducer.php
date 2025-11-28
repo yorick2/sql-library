@@ -15,7 +15,7 @@ class ManyManyTableReducer
      * @param string $linkColumn2 column in this table that links to $pivotTable e.g. 'table2_id'
      * @return string
      */
-    public function getSqlText(
+    static function getSqlText(
         string $pivotTable,
         string $table1,
         string $linkColumn1,

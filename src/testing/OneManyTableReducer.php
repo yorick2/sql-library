@@ -15,7 +15,7 @@ class OneManyTableReducer
      * @param string $linkColumn2 column in this table that links to table 1 e.g. 'table1_id'
      * @return string
      */
-    public function getSqlText(
+    static function getSqlText(
         int $qtyRows,
         string $table1,
         string $linkColumn1,

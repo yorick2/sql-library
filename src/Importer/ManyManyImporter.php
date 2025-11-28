@@ -23,7 +23,7 @@ class ManyManyImporter
      * @param string $link e.g. 'WHERE `sometext` = NEW.`sometext`'
      * @return string
      */
-    public function getSimpleManyManySqlText(
+    static function getSimpleManyManySqlText(
         $tempTable='temp',
         $fileDelimiter='\t',
         string $filePath,

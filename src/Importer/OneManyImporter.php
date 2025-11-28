@@ -20,7 +20,7 @@ class OneManyImporter
      * @param $link string e.g. 'WHERE `sometext` = NEW.`sometext`'
      * @return string
      */
-    public function getSqlText(
+    static function getSqlText(
         $tempTable='temp',
         $fileDelimiter='\t',
         string $filePath,
