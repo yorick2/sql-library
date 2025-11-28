@@ -1,6 +1,6 @@
 <?php
 
-namespace Yorick2\SqlLibrary\Importer;
+namespace PaulMillband\SqlLibrary\Importer;
 
 class ManyManyImporter
 {

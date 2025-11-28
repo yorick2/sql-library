@@ -1,6 +1,6 @@
 <?php
 
-namespace Yorick2\SqlLibrary\testing;
+namespace PaulMillband\SqlLibrary\testing;
 
 class ManyManyTableReducer
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Yorick2\Importer;
+namespace PaulMillband\Importer;
 
 class OneManyImporter
 {

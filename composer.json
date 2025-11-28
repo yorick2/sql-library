@@ -1,18 +1,25 @@
 {
-    "name": "yorick2/sql-library",
-    "description": "A library of suseful sql for tasks",
+    "name": "paulmillband/sql-library",
+    "description": "A library of useful sql for tasks",
     "type": "library",
     "license": "mit",
     "autoload": {
         "psr-4": {
-            "Yorick2\\SqlLibrary\\": "src/"
+            "PaulMillband\\SqlLibrary\\": "src/"
         }
     },
     "authors": [
         {
-            "name": "Paul Millband",
-            "email": "millband_paul@hotmail.co.uk"
+          "name": "Paul Millband",
+          "homepage": "https://github.com/yorick2",
+          "role": "Developer"
         }
     ],
-    "require": {}
+    "funding": [
+      {
+        "type": "paypal",
+        "url": "https://www.paypal.com/donate/?hosted_button_id=95TTM4Z9Q7MNG"
+      }
+    ],
+  "require": {}
 }
