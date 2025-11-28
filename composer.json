@@ -21,5 +21,7 @@
         "url": "https://www.paypal.com/donate/?hosted_button_id=95TTM4Z9Q7MNG"
       }
     ],
-  "require": {}
+  "require": {},
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }
