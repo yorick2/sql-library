@@ -12,8 +12,8 @@ class SimpleImporterTest extends TestCase
 {
     protected mysqli $db;
 
-//     protected $file=__DIR__.'/../data/many-many.tsv';
-    protected $file = '/tmp/many-many.tsv';
+//     protected $file=__DIR__.'/../data/simple.tsv';
+    protected $file = '/tmp/simple.tsv';
 
     protected function setUp(): void
     {
