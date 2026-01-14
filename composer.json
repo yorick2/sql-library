@@ -5,7 +5,8 @@
     "license": "mit",
     "autoload": {
         "psr-4": {
-            "PaulMillband\\SqlLibrary\\": "src/"
+            "PaulMillband\\SqlLibrary\\": "src/",
+            "PaulMillband\\SqlLibrary\\tests\\": "tests/"
         }
     },
     "authors": [
@@ -21,7 +22,9 @@
         "url": "https://www.paypal.com/donate/?hosted_button_id=95TTM4Z9Q7MNG"
       }
     ],
-  "require": {},
   "minimum-stability": "dev",
-  "prefer-stable": true
+  "prefer-stable": true,
+    "require-dev": {
+        "phpunit/phpunit": "^12.5",
+        "thingengineer/mysqli-database-class": "dev-master"}
 }
