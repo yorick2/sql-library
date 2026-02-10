@@ -4,7 +4,15 @@ namespace PaulMillband\SqlLibrary\tests\Helper;
 
 class DatabaseHelper
 {
-    public function dropTables(): void
+    static function getDatabaseName(): string
+    {
+        return DatabaseSqlHelper::getInstance()
+            ->getConnection()
+            ->query('SELECT DATABASE()')
+            ->fetch_row()[0];
+    }
+
+    static function dropTables(): void
     {
         $db = DatabaseSqlHelper::getInstance()->getConnection();
         $query=<<<EOF

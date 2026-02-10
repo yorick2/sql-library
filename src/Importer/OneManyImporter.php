@@ -5,19 +5,21 @@ namespace PaulMillband\SqlLibrary\Importer;
 class OneManyImporter
 {
     /**
-     * Import a tsv or csv, one-one relationships into a many-many database
+     * Import a tsv or csv into a one-many database
      *
-     * @param $table1 string e.g. 'table1'
-     * @param $columnsForTable1 string e.g. '`column1`,`column2`'
-     * @param $valueColumnsForTable1 string e.g. 'NEW.`column1`,NEW.`column2`'
-     * @param $table2 string e.g. 'table2'
-     * @param $columnsForTable2 string e.g. '`table1_id`,`column3`,`column4`'
-     * @param $valueColumnsForTable2 string e.g. 'id, NEW.`column3`,NEW.`column4`'
-     * @param $link string e.g. 'WHERE `sometext` = NEW.`sometext`'
-     * @param $filePath string file path e.g. '__DIR__./src/test.tsv'
-     * @param $fileColumns string e.g. 'column1,column2'
-     * @param $fileDelimiter string e.g. '\t'
-     * @param $tempTable string e.g. 'temp'
+     * @param string $table1 string e.g. 'table1'
+     * @param string $columnsForTable1 e.g. '`column1`,`column2`'
+     * @param string $valueColumnsForTable1 e.g. 'NEW.`column1`,NEW.`column2`'
+     * @param string $table2 e.g. 'table2'
+     * @param string $columnsForTable2 e.g. '`table1_id`,`column3`,`column4`'
+     * @param string $valueColumnsForTable2 e.g. 'id, NEW.`column3`,NEW.`column4`'
+     * @param string $linkColumnForTable2,e.g. `column2`'
+     * @param string $onDuplicateText how to fill columns when duplicate e.g. '`text1` = VALUES(`text1`), `text1b` = VALUES(`text1b`)'
+     * @param string $filePath file path e.g. '__DIR__./src/test.tsv'
+     * @param string $fileColumns e.g. 'column1,column2'
+     * @param int $ignoreLines No. of lines to ignore in the file e.g. for the header
+     * @param string $fileDelimiter e.g. '\t'
+     * @param string $tempTable e.g. 'temp'
      * @return string
      */
     static function getSqlText(
@@ -27,14 +29,23 @@ class OneManyImporter
         string $table2,
         string $columnsForTable2,
         string $valueColumnsForTable2,
-        string $link,
+        string $linkColumnForTable2,
+        string $onDuplicateText,
         string $filePath,
         string $fileColumns,
+        int $ignoreLines=0,
         string $fileDelimiter='\t',
         string $tempTable='temp'
     )
     {
+        $ignoreLinesText='';
+        if($ignoreLines>0){
+            $ignoreLinesText="IGNORE $ignoreLines LINES\n";
+        }
         return <<<EOF
+        truncate table1;
+        truncate table2;
+        
         DROP TABLE IF EXISTS `$tempTable`;
         DROP TRIGGER IF EXISTS `from_load_data`;
         DROP TRIGGER IF EXISTS `from_load_data_2`;
@@ -49,23 +60,22 @@ class OneManyImporter
         FOR EACH ROW
            INSERT INTO `$table1` ($columnsForTable1)
              VALUES ($valueColumnsForTable1)
-             ON DUPLICATE KEY UPDATE `Hebrew` = VALUES(`Hebrew`);
+             ON DUPLICATE KEY UPDATE $onDuplicateText;
 
         CREATE TRIGGER `from_load_data_to_table2` AFTER INSERT ON `$tempTable`
         FOR EACH ROW
            INSERT INTO `$table2` ($columnsForTable2)
              SELECT $valueColumnsForTable2
              FROM `$table1`
-             $link;
+             WHERE `$linkColumnForTable2` = NEW.`$linkColumnForTable2`;
 
         LOAD DATA INFILE '$filePath'
         IGNORE INTO TABLE `$tempTable`
         FIELDS TERMINATED BY '$fileDelimiter'
-        IGNORE 1 LINES
-        ($fileColumns);
+        $ignoreLinesText($fileColumns);
         
-        # cleanup
-        DROP TABLE IF EXISTS `$tempTable`;
+    # cleanup
+--         DROP TABLE IF EXISTS `$tempTable`;
         DROP TRIGGER IF EXISTS `from_load_data_to_table1`;
         DROP TRIGGER IF EXISTS `from_load_data_to_table2`;
 EOF;

@@ -1,0 +1,7 @@
+text1,text1b,text2,text1b
+test1,foo,bar,baz
+test1,foo2,bar2,
+test1,foo3,bar3,baz3
+test2,,bar4,
+test2,foo5,,baz5
+test3,,,

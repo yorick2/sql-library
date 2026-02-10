@@ -41,5 +41,4 @@ class DatabaseSqlHelper
     {
         return $this->connection;
     }
-
 }
