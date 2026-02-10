@@ -5,17 +5,15 @@ namespace PaulMillband\SqlLibrary\tests\Importer;
 use mysqli;
 use PaulMillband\SqlLibrary\tests\Helper\DatabaseHelper;
 use PaulMillband\SqlLibrary\tests\Helper\DatabaseSqlHelper;
+use PaulMillband\SqlLibrary\tests\Helper\fileDataHelper;
 use PHPUnit\Framework\TestCase;
 use PaulMillband\SqlLibrary\Importer\OneManyImporter;
 
 class OneManyImporterTest extends TestCase
 {
     protected mysqli $db;
-
-//     protected $file1=__DIR__.'/../data/many-many.tsv';
-//     protected $file2=__DIR__.'/../data/many-many2.tsv';
     protected $file1='/tmp/one-many.csv';
-//    protected $file2='/tmp/one-many2.tsv';
+    protected $file1ForPhpunit='../data/one-many.csv';
 
     protected function setUp(): void
     {
@@ -89,6 +87,16 @@ EOF;
         $this->assertNotEquals(0, $this->db->query('SELECT * FROM `table1` LIMIT 1')->num_rows);
         $this->assertNotEquals(0, $this->db->query('SELECT * FROM `table2` LIMIT 1')->num_rows);
 
+        $data=$this->db->query('SELECT * FROM `table1`');
+        $this->assertTrue(
+            fileDataHelper::isComparativeData($this->file1ForPhpunit, $data),
+            'Test csv data same as database `table1`'
+        );
+        $data=$this->db->query('SELECT * FROM `table2`');
+        $this->assertTrue(
+            fileDataHelper::isComparativeData($this->file1ForPhpunit, $data),
+            'Test csv data same as database `table2`'
+        );
     }
 
 //    public function test_getSplitRecordsWithCommasSqlText(): void
