@@ -5,6 +5,7 @@ namespace PaulMillband\SqlLibrary\tests\Importer;
 use mysqli;
 use PaulMillband\SqlLibrary\tests\Helper\DatabaseHelper;
 use PaulMillband\SqlLibrary\tests\Helper\DatabaseSqlHelper;
+use PaulMillband\SqlLibrary\tests\TestLibrary\DataTestLibrary;
 use PHPUnit\Framework\TestCase;
 use PaulMillband\SqlLibrary\Importer\SimpleImporter;
 
@@ -12,7 +13,7 @@ class SimpleImporterTest extends TestCase
 {
     protected mysqli $db;
 
-//     protected $file=__DIR__.'/../data/simple.tsv';
+     protected $localFile = '../data/simple.tsv';
     protected $file = '/tmp/simple.tsv';
 
     protected function setUp(): void
@@ -25,7 +26,7 @@ class SimpleImporterTest extends TestCase
     protected function tearDown(): void
     {
         parent::tearDown();
-//        $this->dropTables();
+        (new DatabaseHelper())->dropTables();
     }
 
     protected function createTables(): void
@@ -61,5 +62,8 @@ EOF;
         } while ($this->db->next_result());
 
         $this->assertNotEquals(0, $this->db->query('SELECT * FROM `table1` LIMIT 1')->num_rows);
+
+        (new DataTestLibrary($this->name()))
+            ->compareTableToCsvData('table1', __DIR__.'/'.$this->localFile, ['text1','text1b','text1c'], "\t");
     }
 }

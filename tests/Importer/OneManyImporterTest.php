@@ -3,17 +3,18 @@
 namespace PaulMillband\SqlLibrary\tests\Importer;
 
 use mysqli;
+use PaulMillband\SqlLibrary\Importer\OneManyImporter;
 use PaulMillband\SqlLibrary\tests\Helper\DatabaseHelper;
 use PaulMillband\SqlLibrary\tests\Helper\DatabaseSqlHelper;
-use PaulMillband\SqlLibrary\tests\Helper\fileDataHelper;
+use PaulMillband\SqlLibrary\tests\TestLibrary\DataTestLibrary;
 use PHPUnit\Framework\TestCase;
-use PaulMillband\SqlLibrary\Importer\OneManyImporter;
 
 class OneManyImporterTest extends TestCase
 {
     protected mysqli $db;
     protected $file1='/tmp/one-many.csv';
     protected $file1ForPhpunit='../data/one-many.csv';
+
 
     protected function setUp(): void
     {
@@ -25,7 +26,7 @@ class OneManyImporterTest extends TestCase
     protected function tearDown(): void
     {
         parent::tearDown();
-//        (new DatabaseHelper())->dropTables();
+        (new DatabaseHelper())->dropTables();
     }
 
     protected function createTables(): void
@@ -78,7 +79,7 @@ EOF;
             'temp'
         );
         error_reporting(E_ALL);
-        $result = $this->db->multi_query($query);
+        $this->db->multi_query($query);
         // do not remove. multi_query needs this to allow next query to run
         while ($this->db->next_result())
         {
@@ -87,16 +88,9 @@ EOF;
         $this->assertNotEquals(0, $this->db->query('SELECT * FROM `table1` LIMIT 1')->num_rows);
         $this->assertNotEquals(0, $this->db->query('SELECT * FROM `table2` LIMIT 1')->num_rows);
 
-        $data=$this->db->query('SELECT * FROM `table1`');
-        $this->assertTrue(
-            fileDataHelper::isComparativeData($this->file1ForPhpunit, $data),
-            'Test csv data same as database `table1`'
-        );
-        $data=$this->db->query('SELECT * FROM `table2`');
-        $this->assertTrue(
-            fileDataHelper::isComparativeData($this->file1ForPhpunit, $data),
-            'Test csv data same as database `table2`'
-        );
+        (new DataTestLibrary($this->name()))
+            ->compareTableToCsvData('table1', __DIR__.'/'.$this->file1ForPhpunit)
+            ->compareCsvDataToTable('table2', __DIR__.'/'.$this->file1ForPhpunit);
     }
 
 //    public function test_getSplitRecordsWithCommasSqlText(): void

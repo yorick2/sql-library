@@ -3,8 +3,11 @@
 namespace PaulMillband\SqlLibrary\tests\Importer;
 
 use mysqli;
+use PaulMillband\SqlLibrary\tests\Helper\CsvFileDataHelper;
 use PaulMillband\SqlLibrary\tests\Helper\DatabaseHelper;
 use PaulMillband\SqlLibrary\tests\Helper\DatabaseSqlHelper;
+use PaulMillband\SqlLibrary\tests\Helper\DataHelper;
+use PaulMillband\SqlLibrary\tests\TestLibrary\DataTestLibrary;
 use PHPUnit\Framework\TestCase;
 use PaulMillband\SqlLibrary\Importer\ManyManyImporter;
 
@@ -12,12 +15,12 @@ class ManyManyImporterTest extends TestCase
 {
     protected mysqli $db;
 
-//     protected $fileSimple=__DIR__.'/../data/many-many-simple.tsv';
-//     protected $file1=__DIR__.'/../data/many-many.tsv';
-//     protected $file2=__DIR__.'/../data/many-many2.tsv';
-    protected $fileSimple='/tmp/many-many-simple.tsv';
-    protected $file1='/tmp/many-many.tsv';
-    protected $file2='/tmp/many-many2.tsv';
+     protected $localFileSimple = '../data/many-many-simple.tsv';
+     protected $localFile1 = '../data/many-many.tsv';
+     protected $localFile2 = '../data/many-many2.tsv';
+    protected $fileSimple = '/tmp/many-many-simple.tsv';
+    protected $file1 = '/tmp/many-many.tsv';
+    protected $file2 = '/tmp/many-many2.tsv';
 
     protected function setUp(): void
     {
@@ -29,7 +32,7 @@ class ManyManyImporterTest extends TestCase
     protected function tearDown(): void
     {
         parent::tearDown();
-//        (new DatabaseHelper())->dropTables();
+        (new DatabaseHelper())->dropTables();
     }
 
     protected function createTables(): void
@@ -108,6 +111,20 @@ EOF;
             ->query('SELECT MIN(`id`) FROM `table2`')
             ->fetch_column( 0 );
         $this->assertEquals(100, $lowestId);
+
+        (new DataTestLibrary($this->name()))
+            ->compareTableToCsvData(
+                'table1',
+                __DIR__.'/'.$this->localFileSimple,
+                ['text1', 'text1b', 'text1c', 'text2'],
+                "\t"
+            )
+            ->compareTableToCsvData(
+                'table1',
+                __DIR__.'/'.$this->localFileSimple,
+                ['text1', 'text1b', 'text1c', 'text2'],
+                "\t"
+            );
     }
 
     public function test_getSplitRecordsWithCommasSqlText(): void
@@ -128,12 +145,14 @@ EOF;
         $this->db->multi_query($query);
         while ($this->db->next_result()){;}
 
+        $tableName='table1';
+        $splitCol='text1c';
         $query=ManyManyImporter::getSplitRecordsWithCommasSqlText(
             'link',
             '`table1_id`,`table2_id`',
             'new.`id`, new.`table2_id`',
-            'table1',
-            'text1c',
+            $tableName,
+            $splitCol,
             '`text1`,`text1b`',
             'table2_id',
             '',
@@ -141,5 +160,30 @@ EOF;
         $result = $this->db->multi_query($query);
         // do not remove. multi_query needs this to allow next query to run
         while ($this->db->next_result()){;}
+
+        $result=$this->db
+            ->query('SELECT * FROM `table1` WHERE `'.$splitCol.'` LIKE "%,%"');
+        $this->assertEquals(0, $result->num_rows, "test has no rows containing a comma in column $splitCol");
+
+        $result=$this->db
+            ->query("SELECT * FROM `table1` WHERE text1='test1' AND text1b='foo' AND $splitCol='foo' ");
+        $this->assertEquals(1, $result->num_rows, "test has successfully created the 1st split from row 1");
+        $result=$this->db
+            ->query("SELECT * FROM `table1` WHERE text1='test1' AND text1b='foo' AND $splitCol='foo2' ");
+        $this->assertEquals(1, $result->num_rows, "test has successfully created the 2nd split from row 1");
+        $result=$this->db
+            ->query("SELECT * FROM `table1` WHERE text1='test1' AND text1b='foo' AND $splitCol='foo3' ");
+        $this->assertEquals(1, $result->num_rows, "test has successfully created the 3rd split from row 1");
+        $result=$this->db
+            ->query("SELECT * FROM `table1` WHERE text1='test1' AND text1b='foo' AND $splitCol='foo3' ");
+        $this->assertEquals(1, $result->num_rows, "test has successfully created the 4th split from row 1");
+
+        $result=$this->db
+            ->query("SELECT * FROM `table1` WHERE text1='test6' AND text1b='' AND $splitCol='foobar'");
+        $this->assertEquals(1, $result->num_rows, "test has successfully created the 1st split from row 6");
+        $result=$this->db
+            ->query("SELECT * FROM `table1` WHERE text1='test6' AND text1b='' AND $splitCol='foobar2'");
+        $this->assertEquals(1, $result->num_rows, "test has successfully created the 2nd split from row 6");
+
     }
 }

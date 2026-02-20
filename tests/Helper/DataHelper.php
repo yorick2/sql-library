@@ -2,32 +2,23 @@
 
 namespace PaulMillband\SqlLibrary\tests\Helper;
 
-class fileDataHelper
+class DataHelper
 {
-    static function isComparativeData($file, $data): bool
+    /**
+     * @param array $data1 an associated array in format [ ["col1"=>"1","col2"=>"9"], ["col1"=>"4","col2"=>"6"], ... ]
+     * @param array $data2 an associated array in format [ ["col1"=>"1","col2"=>"9"], ["col1"=>"4","col2"=>"6"], ... ]
+     * @return array returns first data row that cant be found in the csv
+     */
+    static function getDataMissing(array $data1, array $data2): array
     {
-        $csvData = self::getDataFromCsv($file, $data);
-        $dataRow = $data->fetch_array();
-        $keys = self::getKeysToUse($dataRow, $csvData);
-        if (!self::checkDataRow($csvData, $dataRow, $keys)) {
-            return false;
-        }
-        while ($dataRow = $data->fetch_array()) {
-            if (!self::checkDataRow($csvData, $dataRow, $keys)) {
-                return false;
+        $keys = self::getKeysToUse($data2[0], $data1);
+        // do for the remaining data rows
+        for($i = 0; $i < count($data2); $i++) {
+            if (!self::checkDataRow($data1, $data2[$i], $keys)) {
+                return $data2[$i];
             }
         }
-        return true;
-    }
-
-    static function getDataFromCsv(string $filePath): array
-    {
-        $data = array_map(fn($v) => str_getcsv($v, separator: ',', escape: ''), file($filePath));
-        array_walk($data, function (&$a) use ($data) {
-            $a = array_combine($data[0], $a);
-        });
-        array_shift($data); # remove column header
-        return $data;
+        return [];
     }
 
     static function checkDataRow(array $csvData, array $dataRow, array $keys): bool
