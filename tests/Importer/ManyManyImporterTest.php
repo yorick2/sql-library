@@ -14,13 +14,9 @@ use PaulMillband\SqlLibrary\Importer\ManyManyImporter;
 class ManyManyImporterTest extends TestCase
 {
     protected mysqli $db;
-
      protected $localFileSimple = '../data/many-many-simple.tsv';
-     protected $localFile1 = '../data/many-many.tsv';
-     protected $localFile2 = '../data/many-many2.tsv';
-    protected $fileSimple = '/tmp/many-many-simple.tsv';
-    protected $file1 = '/tmp/many-many.tsv';
-    protected $file2 = '/tmp/many-many2.tsv';
+    protected $fileSimple = '/tmp/data/many-many-simple.tsv';
+    protected $fileCommas = '/tmp/data/many-many-commas.tsv';
 
     protected function setUp(): void
     {
@@ -120,7 +116,7 @@ EOF;
                 "\t"
             )
             ->compareTableToCsvData(
-                'table1',
+                'table2',
                 __DIR__.'/'.$this->localFileSimple,
                 ['text1', 'text1b', 'text1c', 'text2'],
                 "\t"
@@ -129,7 +125,10 @@ EOF;
 
     public function test_getSplitRecordsWithCommasSqlText(): void
     {
-        $query=ManyManyImporter::getSimpleManyManySqlText(
+        $this->assertEquals(0, $this->db->query('SELECT * FROM `link` LIMIT 1')->num_rows);
+        $this->assertEquals(0, $this->db->query('SELECT * FROM `table1` LIMIT 1')->num_rows);
+        $this->assertEquals(0, $this->db->query('SELECT * FROM `table2` LIMIT 1')->num_rows);
+        $query=ManyManyImporter::getSplitRecordsWithCommasSqlText(
             1,
             'link',
             '`table1_id`,`table2_id`',
@@ -139,7 +138,7 @@ EOF;
             'table2',
             'id,text2',
             'NEW.`id`,NEW.`text2`',
-            $this->fileSimple,
+            $this->fileCommas,
             '`text1`,`text1b`,`text1c`,`text2`'
         );
         $this->db->multi_query($query);

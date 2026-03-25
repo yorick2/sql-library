@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 class OneManyImporterTest extends TestCase
 {
     protected mysqli $db;
-    protected $file1='/tmp/one-many.csv';
+    protected $file1='/tmp/data/one-many.csv';
     protected $file1ForPhpunit='../data/one-many.csv';
 
 
@@ -59,7 +59,7 @@ EOF;
         );
     }
 
-    public function test_getSimpleManyManySqlText_works(): void
+    public function test_getSimpleOneManySqlText_works(): void
     {
         $this->assertEquals(0, $this->db->query('SELECT * FROM `table1` LIMIT 1')->num_rows);
         $this->assertEquals(0, $this->db->query('SELECT * FROM `table2` LIMIT 1')->num_rows);

@@ -1,6 +1,6 @@
-test1	foo	foo,foo2,foo3,foo4	testing1
+test1	foo	foo	testing1
 test2	bar		testing2
 test3		barbar	testing3
-test4	barbar	bar,bar2,bar3	testing4
+test4	barbar	bar	testing4
 test5			testing5
-test6		foobar,foobar2	testing6
+test6		foobar	testing6

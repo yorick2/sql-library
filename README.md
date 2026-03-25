@@ -1,10 +1,82 @@
 # sql-library
+## Definitions
+### Simple Tables
+import single table
+e.g.
+
+| x | y |
+|---|---|
+| 1 | 2 |
+| 3 | 5 |
+| 5 | 3 |
+
+### One-many table
+two tables linked table1:id = table2:table1_id. Overwriting table1 data for rows with the duplicate link column data
+
+table1)
+
+| id | text1 | text1b |
+|----|-------|--------|
+| 1  | test1 | foo3   |
+| 4  | test2 | foo5   |
+| 6  | test3 |        |
+
+table2)
+
+| id | text1_id | text2 |
+|----|----------|-------|
+| 1  | 1        | bar   |
+| 4  | 1        | bar2  |
+| 6  | 1        | bar3  |
+| 6  | 4        | bar4  |
+| 6  | 4        |       |
+| 6  | 6        |       |
+
+### Many-many table
+two tables linked with a link/pivot table, importing every line of table data
+
+link)
+
+| table1_id | table2_id |
+|-----------|-----------|
+| 1         | 1         |
+| 1         | 2         |
+| 1         | 3         |
+| 2         | 1         |
+| 2         | 2         |
+| 3         | 2         |
+| 3         | 4         |
+
+table1)
+
+| id | text1 | text1b |
+|----|-------|--------|
+| 1  | test1 | bar    |
+| 2  | test2 | barbar |
+| 3  | test3 |        |
+
+table2)
+
+| id | text2 |
+|----|-------|
+| 1  | foo   |
+| 2  | foo2  |
+| 3  | foo3  |
+| 4  | foo4  |
 
 ## Importers
+src/Importer/SimpleImporter.php    
 src/Importer/OneManyImporter.php    
 src/Importer/ManyManyImporter.php Import a tsv or csv, one-one relationships into a many-many database
 
 ## Reducers
-delete rows from 2 tables linked together. Leaving valid linked data.
-src/testing/OneManyImporter.php
-src/testing/ManyManyImporter.php
+Delete rows from 2 tables linked together, leaving the defined qty of rows. Leaving valid linked data.
+src/reducer/OneManyImporter.php 
+src/reducer/ManyManyImporter.php
+
+## Testing 
+### Docker
+add test files to docker sql instance
+docker cp "<<path to repo>>/tests/data" <<sql docker name>>:/tmp
+e.g.
+docker cp "<<path to repo>>/tests/data" mysql_1:/tmp
