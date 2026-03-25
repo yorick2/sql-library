@@ -19,6 +19,7 @@ class ManyManyImporter
      * @param string $valueColumnsForTable2 e.g. 'id, NEW.`column3`,NEW.`column4`'
      * @param string $filePath file path e.g. '__DIR__./src/test.tsv'
      * @param string $fileColumns e.g. 'column1,column2'
+     * @param int    $ignoreLinesInt number of lines to ignore at the start of the file
      * @param string $fileDelimiter e.g. '\t'
      * @param string $tempTable e.g. 'temp'
      * @return string
@@ -38,7 +39,7 @@ class ManyManyImporter
         int    $ignoreLinesInt=0,
         string $fileDelimiter='\t',
         string $tempTable='temp'
-    )
+    ) : string
     {
         $ignoreLinesText='';
         if ($ignoreLinesInt){
@@ -47,9 +48,6 @@ class ManyManyImporter
         return <<<EOF
         # clean workspace
         SET FOREIGN_KEY_CHECKS=0;
-        TRUNCATE TABLE `$pivotTable`;
-        TRUNCATE TABLE `$table1`;
-        TRUNCATE TABLE `$table2`;
         DROP TABLE IF EXISTS `$tempTable`;
         DROP TRIGGER IF EXISTS `from_load_data_to_table1`;
         DROP TRIGGER IF EXISTS `from_load_data_to_table2`;
@@ -103,7 +101,7 @@ EOF;
      * |id|column1      |column2   |
      * |0|foo,bar,foobar|some text |
      *
-     * @param string $pivotTable string e.g. 'table1_table2'
+     * @param string $pivotTable e.g. 'table1_table2'
      * @param string $pivotTableColumns e.g. '`table1_id`,`table2_id`'
      * @param string $pivotTableValues e.g. 'NEW.`table1_id`,NEW.`table2_id`'
      * @param string $table e.g. 'table1'
@@ -127,7 +125,7 @@ EOF;
         string $additionalLoopCommand,
         string $tempTable='temp',
         int    $maxIterations=10000
-    )
+    ) : string
     {
         return <<<EOF
         DROP TABLE IF EXISTS `$tempTable`;
@@ -194,5 +192,46 @@ EOF;
             DROP COLUMN `$linkColumnForTable2`;
        #  DROP TABLE IF EXISTS `$tempTable`;
 EOF;
+    }
+
+    /**
+     * @param string $pivotTable string e.g. 'table1_table2'
+     * @param string $filePath file path e.g. '__DIR__./src/test.tsv'
+     * @param array $pivotTableColumns pivot table columns in the order of the related column in the file e.g. ['table1_id','table2_id']
+     * @param array $tables tables in the order of the related column in the file e.g. ['table1','table2']
+     * @param array $refColumns the column the tables to match the file data to. In the order of the related column in the file e.g. ['ref','ref']
+     * @param int $ignoreLinesInt number of lines to ignore at the start of the file
+     * @param string $fileDelimiter e.g. '\t'
+     * @return string
+     */
+    static function getPivotTableImportSqlText(
+        string $pivotTable,
+        string $filePath,
+        array $pivotTableColumns,
+        array $tables,
+        array $refColumns,
+        int    $ignoreLinesInt=0,
+        string $fileDelimiter='\t'
+    ) : string
+    {
+        $ignoreLinesText='';
+        if ($ignoreLinesInt){
+            $ignoreLinesText="IGNORE $ignoreLinesInt LINES\n";
+        }
+        $query = <<<EOF
+            LOAD DATA INFILE '$filePath'
+            IGNORE
+            INTO TABLE `$pivotTable`
+            FIELDS TERMINATED BY '$fileDelimiter'
+            $ignoreLinesText (
+EOF;
+        for($i=0; $i<count($pivotTableColumns); $i++) {
+            $query .= '@ref' . $i . ',';
+        }
+        $query = rtrim($query,',').") \n SET";
+        for($i=0; $i<count($pivotTableColumns); $i++){
+            $query.= "`$pivotTableColumns[$i]` = (SELECT `id` FROM `$tables[$i]` WHERE `$refColumns[$i]` = @ref$i),";
+        }
+        return rtrim($query,',').';';
     }
 }

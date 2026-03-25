@@ -43,9 +43,6 @@ class OneManyImporter
             $ignoreLinesText="IGNORE $ignoreLines LINES\n";
         }
         return <<<EOF
-        truncate table1;
-        truncate table2;
-        
         DROP TABLE IF EXISTS `$tempTable`;
         DROP TRIGGER IF EXISTS `from_load_data`;
         DROP TRIGGER IF EXISTS `from_load_data_2`;

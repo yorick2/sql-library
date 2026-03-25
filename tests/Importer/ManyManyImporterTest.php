@@ -3,10 +3,9 @@
 namespace PaulMillband\SqlLibrary\tests\Importer;
 
 use mysqli;
-use PaulMillband\SqlLibrary\tests\Helper\CsvFileDataHelper;
+use PaulMillband\SqlLibrary\Importer\SimpleImporter;
 use PaulMillband\SqlLibrary\tests\Helper\DatabaseHelper;
 use PaulMillband\SqlLibrary\tests\Helper\DatabaseSqlHelper;
-use PaulMillband\SqlLibrary\tests\Helper\DataHelper;
 use PaulMillband\SqlLibrary\tests\TestLibrary\DataTestLibrary;
 use PHPUnit\Framework\TestCase;
 use PaulMillband\SqlLibrary\Importer\ManyManyImporter;
@@ -15,8 +14,14 @@ class ManyManyImporterTest extends TestCase
 {
     protected mysqli $db;
      protected $localFileSimple = '../data/many-many-simple.tsv';
+    protected $localFileComplexDesired = '../data/many-many-complex-desired.tsv';
     protected $fileSimple = '/tmp/data/many-many-simple.tsv';
     protected $fileCommas = '/tmp/data/many-many-commas.tsv';
+
+    protected $fileComplex1 = '/tmp/data/many-many-complex-1.tsv';
+    protected $fileComplex2 = '/tmp/data/many-many-complex-2.tsv';
+    protected $fileComplexPivot = '/tmp/data/many-many-complex-pivot.tsv';
+    protected $fileComplexDesired = '/tmp/data/many-many-complex-desired.tsv';
 
     protected function setUp(): void
     {
@@ -28,7 +33,7 @@ class ManyManyImporterTest extends TestCase
     protected function tearDown(): void
     {
         parent::tearDown();
-        (new DatabaseHelper())->dropTables();
+//        (new DatabaseHelper())->dropTables();
     }
 
     protected function createTables(): void
@@ -183,6 +188,55 @@ EOF;
         $result=$this->db
             ->query("SELECT * FROM `table1` WHERE text1='test6' AND text1b='' AND $splitCol='foobar2'");
         $this->assertEquals(1, $result->num_rows, "test has successfully created the 2nd split from row 6");
-
     }
+
+    public function test_getPivotTableImportSqlText_works(): void
+    {
+        $this->assertEquals(0, $this->db->query('SELECT * FROM `link` LIMIT 1')->num_rows);
+        $this->assertEquals(0, $this->db->query('SELECT * FROM `table1` LIMIT 1')->num_rows);
+        $this->assertEquals(0, $this->db->query('SELECT * FROM `table2` LIMIT 1')->num_rows);
+
+        $query = 'ALTER TABLE `table1` ADD COLUMN `myRef1` INT;'
+            .'ALTER TABLE `table2` ADD COLUMN `myRef2` INT;'
+            .SimpleImporter::getSqlText(
+                'table1',
+                $this->fileComplex1,
+                '`myRef1`,`text1`,`text1b`,`text1c`',
+            )
+            .SimpleImporter::getSqlText(
+                'table2',
+                $this->fileComplex2,
+                '`myRef2`,`text2`',
+            );
+        $result = $this->db->multi_query($query);
+        // do not remove. multi_query needs this to allow next query to run
+        do {
+        } while ($this->db->next_result());
+
+        $query=ManyManyImporter::getPivotTableImportSqlText(
+            'link',
+            $this->fileComplexPivot,
+            ['table1_id','table2_id'],
+            ['table1','table2'],
+            ['myRef1','myRef2'],
+            1,
+            '\t'
+        );
+        $this->db->multi_query($query);
+        // do not remove. multi_query needs this to allow next query to run
+        while ($this->db->next_result()){;}
+
+        $this->assertNotEquals(0, $this->db->query('SELECT * FROM `link` LIMIT 1')->num_rows);
+        $this->assertNotEquals(0, $this->db->query('SELECT * FROM `table1` LIMIT 1')->num_rows);
+        $this->assertNotEquals(0, $this->db->query('SELECT * FROM `table2` LIMIT 1')->num_rows);
+
+        (new DataTestLibrary($this->name()))
+            ->compareTableToCsvData(
+                'link',
+                __DIR__.'/'.$this->localFileComplexDesired,
+                [],
+                "\t"
+            );
+    }
+
 }
