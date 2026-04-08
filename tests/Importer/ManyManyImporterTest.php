@@ -133,7 +133,7 @@ EOF;
         $this->assertEquals(0, $this->db->query('SELECT * FROM `link` LIMIT 1')->num_rows);
         $this->assertEquals(0, $this->db->query('SELECT * FROM `table1` LIMIT 1')->num_rows);
         $this->assertEquals(0, $this->db->query('SELECT * FROM `table2` LIMIT 1')->num_rows);
-        $query=ManyManyImporter::getSplitRecordsWithCommasSqlText(
+        $query=ManyManyImporter::getSimpleManyManySqlText(
             1,
             'link',
             '`table1_id`,`table2_id`',
@@ -148,6 +148,7 @@ EOF;
         );
         $this->db->multi_query($query);
         while ($this->db->next_result()){;}
+
 
         $tableName='table1';
         $splitCol='text1c';
