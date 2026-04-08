@@ -5,7 +5,7 @@ namespace PaulMillband\SqlLibrary\Importer;
 class SimpleImporter
 {
     /**
-     * Import a tsv or csv, one-one relationships into a many-many database
+     * generate SQL to import a tsv or csv into a single table
      *
      * @param $table string e.g. 'table1'
      * @param $filePath string file path e.g. '__DIR__./src/test.tsv'

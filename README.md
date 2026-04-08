@@ -65,18 +65,30 @@ table2)
 | 4  | foo4  |
 
 ## Importers
-src/Importer/SimpleImporter.php    
-src/Importer/OneManyImporter.php    
-src/Importer/ManyManyImporter.php Import a tsv or csv, one-one relationships into a many-many database
+src/Importer/SimpleImporter.php     import 1 table of data in a csv
+- getSimpleManyManySqlText() : generate SQL to import a tsv or csv into a single table
+
+src/Importer/OneManyImporter.php    import 2 tables of data in a csv, linked by column data provided
+- getSimpleManyManySqlText() : generate SQL to import a tsv or csv into a one-many database
+  
+src/Importer/ManyManyImporter.php   import 2 tables of data in a csv, linked by a 3rd pivot table
+- getSimpleManyManySqlText() : generate SQL to import a simple 1-1 
+- getSplitRecordsWithCommasSqlText() : update an existing database by splitting rows where a column contains comma separated lists
+- getPivotTableImportSqlText() : generate SQL to import pivot table
+
 
 ## Reducers
 Delete rows from 2 tables linked together, leaving the defined qty of rows. Leaving valid linked data.
 src/reducer/OneManyImporter.php 
 src/reducer/ManyManyImporter.php
 
-## Testing 
+## Testing
+### native
+add test files to a native setup for sql to import during tests
+cp "<<path to repo>>/tests/data" /tmp
+
 ### Docker
-add test files to docker sql instance
-docker cp "<<path to repo>>/tests/data" <<sql docker name>>:/tmp
+add test files to docker sql instance to import during tests
+docker cp "<<path to repo>>/tests/data" /tmp
 e.g.
 docker cp "<<path to repo>>/tests/data" mysql_1:/tmp

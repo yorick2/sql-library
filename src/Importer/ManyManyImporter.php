@@ -92,14 +92,21 @@ EOF;
     }
 
     /**
-     * Used to split rows where comma seperated lists should be individual rows, but the other data remains the same.
-     * The original rows are then deleted.
+     * update an existing database by splitting rows where a column contains comma separated lists, which is split into separate row
+     * but the other data remains the same. The original rows are then deleted. The pivot table is also updated
+     * note: Does NOT import data, import first with getSimpleManyManySqlText
      * e.g.
-     * here new rows would be created int this table: 1 for foo, 1 for bar and 1 for foobar.
-     * The pivot table is also updated
      *
-     * |id|column1      |column2   |
-     * |0|foo,bar,foobar|some text |
+     * |column1|column2 |
+     * |-------|--------|
+     * |foo,bar,foobar|some text |
+     *
+     * becomes
+     *
+     * |column1|column2|
+     * |----|-------|
+     * |foo,bar|some text |
+     * |foobar|some text |
      *
      * @param string $pivotTable e.g. 'table1_table2'
      * @param string $pivotTableColumns e.g. '`table1_id`,`table2_id`'
@@ -122,7 +129,7 @@ EOF;
         string $tableColumnToSplit,
         string $remainingColumnsInTable,
         string $linkColumnForTable2,
-        string $additionalLoopCommand,
+        string $additionalLoopCommand='',
         string $tempTable='temp',
         int    $maxIterations=10000
     ) : string
@@ -195,6 +202,9 @@ EOF;
     }
 
     /**
+     * import pivot table based on two columns in the tables provided
+     * note: only imports pivot table data
+     *
      * @param string $pivotTable string e.g. 'table1_table2'
      * @param string $filePath file path e.g. '__DIR__./src/test.tsv'
      * @param array $pivotTableColumns pivot table columns in the order of the related column in the file e.g. ['table1_id','table2_id']

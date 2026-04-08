@@ -5,7 +5,7 @@ namespace PaulMillband\SqlLibrary\Importer;
 class OneManyImporter
 {
     /**
-     * Import a tsv or csv into a one-many database
+     * generate SQL to import a tsv or csv into a one-many database
      *
      * @param string $table1 string e.g. 'table1'
      * @param string $columnsForTable1 e.g. '`column1`,`column2`'
