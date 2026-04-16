@@ -15,6 +15,8 @@ class OneManyImporterTest extends TestCase
     protected $file1='/tmp/data/one-many.csv';
     protected $file1ForPhpunit='../data/one-many.csv';
 
+    protected $fileCommas = '/tmp/data/one-many-commas.tsv';
+
 
     protected function setUp(): void
     {
@@ -93,34 +95,64 @@ EOF;
             ->compareCsvDataToTable('table2', __DIR__.'/'.$this->file1ForPhpunit);
     }
 
-//    public function test_getSplitRecordsWithCommasSqlText(): void
-//    {
-//        $query=ManyManyImporter::getSimpleManyManySqlText(
-//            'link',
-//            '`table1_id`,`table2_id`',
-//            'table1',
-//            '`text1`,`text1b`,`text1c`',
-//            'NEW.`text1`',
-//            'table2',
-//            'text2',
-//            'NEW.`text2`',
-//            $this->file,
-//            'text1,text1b,text1c,text2'
-//        );
-//
-//        $query=ManyManyImporter::getSplitRecordsWithCommasSqlText(
-//            'link',
-//            '`table1_id`,`table2_id`',
-//            'new.`id`, new.`table2_id`',
-//            'table1',
-//            'text1',
-//            '`text1b`,`text1c`',
-//            'table2_id',
-//            '',
-//        );
-//        $result = $this->db->multi_query($query);
-//        // do not remove. multi_query needs this to allow next query to run
-//        do {
-//        } while ($this->db->next_result());
-//    }
+    public function test_getSplitRecordsWithCommasSqlText(): void
+    {
+        $this->assertEquals(0, $this->db->query('SELECT * FROM `table1` LIMIT 1')->num_rows);
+        $this->assertEquals(0, $this->db->query('SELECT * FROM `table2` LIMIT 1')->num_rows);
+        $query=OneManyImporter::getSqlText(
+            'table1',
+            '`text1`,`text1b`',
+            'new.`text1`,new.`text1b`',
+            'table2',
+            '`table1_id`,`text2`,`text2b`',
+            'id,NEW.`text2`,NEW.`text2b`',
+            'text1',
+            '`text1` = VALUES(`text1`),`text1b` = VALUES(`text1b`)',
+            $this->fileCommas,
+            '`text1`,`text1b`,`text2`,`text2b`',
+            1,
+            '\t',
+            'temp'
+        );
+        $this->db->multi_query($query);
+        while ($this->db->next_result()){;}
+
+        $table='table2';
+        $splitCol='text2';
+        $query=OneManyImporter::getSplitRecordsWithCommasSqlText(
+            $table,
+            $splitCol,
+            '`table1_id`,`text2b`',
+            '',
+            'temp',
+            100
+        );
+        $result = $this->db->multi_query($query);
+        // do not remove. multi_query needs this to allow next query to run
+        while ($this->db->next_result()){;}
+
+        $result=$this->db
+            ->query('SELECT * FROM `'.$table.'` WHERE `'.$splitCol.'` LIKE "%,%"');
+        $this->assertEquals(0, $result->num_rows, "test has no rows containing a comma in column $splitCol");
+
+        $result=$this->db
+            ->query("SELECT * FROM `$table` WHERE text1='test1' AND text1b='foo' AND $splitCol='foo' ");
+        $this->assertEquals(1, $result->num_rows, "test has successfully created the 1st split from row 1");
+        $result=$this->db
+            ->query("SELECT * FROM `$table` WHERE text1='test1' AND text1b='foo' AND $splitCol='foo2' ");
+        $this->assertEquals(1, $result->num_rows, "test has successfully created the 2nd split from row 1");
+        $result=$this->db
+            ->query("SELECT * FROM `$table` WHERE text1='test1' AND text1b='foo' AND $splitCol='foo3' ");
+        $this->assertEquals(1, $result->num_rows, "test has successfully created the 3rd split from row 1");
+        $result=$this->db
+            ->query("SELECT * FROM `$table` WHERE text1='test1' AND text1b='foo' AND $splitCol='foo3' ");
+        $this->assertEquals(1, $result->num_rows, "test has successfully created the 4th split from row 1");
+
+        $result=$this->db
+            ->query("SELECT * FROM `$table` WHERE text1='test6' AND text1b='' AND $splitCol='foobar'");
+        $this->assertEquals(1, $result->num_rows, "test has successfully created the 1st split from row 6");
+        $result=$this->db
+            ->query("SELECT * FROM `$table` WHERE text1='test6' AND text1b='' AND $splitCol='foobar2'");
+        $this->assertEquals(1, $result->num_rows, "test has successfully created the 2nd split from row 6");
+    }
 }
