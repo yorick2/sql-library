@@ -1,0 +1,12 @@
+test1	foo	foo	testing1
+test1	foo	foo2	testing1
+test1	foo	foo3	testing1
+test1	foo	foo4	testing1
+test2	bar		testing2
+test3		barbar	testing3
+test4	barbar	bar	testing4
+test4	barbar	bar2	testing4
+test4	barbar	bar3	testing4
+test5			testing5
+test6		foobar	testing6
+test6		foobar2	testing6

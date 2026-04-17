@@ -14,8 +14,8 @@ class OneManyImporterTest extends TestCase
     protected mysqli $db;
     protected $file1='/tmp/data/one-many.csv';
     protected $file1ForPhpunit='../data/one-many.csv';
-
     protected $fileCommas = '/tmp/data/one-many-commas.tsv';
+    protected $localfileCommasDesired='../data/one-many-commas-desired.tsv';
 
 
     protected function setUp(): void
@@ -134,25 +134,12 @@ EOF;
         $result=$this->db
             ->query('SELECT * FROM `'.$table.'` WHERE `'.$splitCol.'` LIKE "%,%"');
         $this->assertEquals(0, $result->num_rows, "test has no rows containing a comma in column $splitCol");
-
-        $result=$this->db
-            ->query("SELECT * FROM `$table` WHERE text1='test1' AND text1b='foo' AND $splitCol='foo' ");
-        $this->assertEquals(1, $result->num_rows, "test has successfully created the 1st split from row 1");
-        $result=$this->db
-            ->query("SELECT * FROM `$table` WHERE text1='test1' AND text1b='foo' AND $splitCol='foo2' ");
-        $this->assertEquals(1, $result->num_rows, "test has successfully created the 2nd split from row 1");
-        $result=$this->db
-            ->query("SELECT * FROM `$table` WHERE text1='test1' AND text1b='foo' AND $splitCol='foo3' ");
-        $this->assertEquals(1, $result->num_rows, "test has successfully created the 3rd split from row 1");
-        $result=$this->db
-            ->query("SELECT * FROM `$table` WHERE text1='test1' AND text1b='foo' AND $splitCol='foo3' ");
-        $this->assertEquals(1, $result->num_rows, "test has successfully created the 4th split from row 1");
-
-        $result=$this->db
-            ->query("SELECT * FROM `$table` WHERE text1='test6' AND text1b='' AND $splitCol='foobar'");
-        $this->assertEquals(1, $result->num_rows, "test has successfully created the 1st split from row 6");
-        $result=$this->db
-            ->query("SELECT * FROM `$table` WHERE text1='test6' AND text1b='' AND $splitCol='foobar2'");
-        $this->assertEquals(1, $result->num_rows, "test has successfully created the 2nd split from row 6");
+        (new DataTestLibrary($this->name()))
+            ->compareTableToCsvData(
+                $table,
+                __DIR__.'/'.$this->localfileCommasDesired,
+                [],
+                "\t"
+            );
     }
 }
