@@ -28,7 +28,11 @@ class DataTestLibrary extends TestCase
         $data=DatabaseSqlHelper::getInstance()->getConnection()
             ->query('SELECT * FROM `'.$tableName.'`')
             ->fetch_all(MYSQLI_ASSOC);
-        $missing=DataHelper::getDataMissing(CsvFileDataHelper::getDataFromCsv($localFilePath, $header, $separator), $data);
+        $missing=DataHelper::getDataMissing(
+            CsvFileDataHelper::getDataFromCsv($localFilePath, $header, $separator),
+            $data,
+            false
+        );
         $this->assertEquals(
             0,
             count($missing),
@@ -47,7 +51,11 @@ class DataTestLibrary extends TestCase
         $data=DatabaseSqlHelper::getInstance()->getConnection()
             ->query('SELECT * FROM `'.$tableName.'`')
             ->fetch_all(MYSQLI_ASSOC);
-        $missing=DataHelper::getDataMissing($data, CsvFileDataHelper::getDataFromCsv($localFilePath));
+        $missing=DataHelper::getDataMissing(
+            $data,
+            CsvFileDataHelper::getDataFromCsv($localFilePath),
+        false
+        );
         $this->assertEquals(
             0,
             count($missing),

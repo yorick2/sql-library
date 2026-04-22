@@ -7,18 +7,23 @@ class DataHelper
     /**
      * @param array $data1 an associated array in format [ ["col1"=>"1","col2"=>"9"], ["col1"=>"4","col2"=>"6"], ... ]
      * @param array $data2 an associated array in format [ ["col1"=>"1","col2"=>"9"], ["col1"=>"4","col2"=>"6"], ... ]
+     * @param bool $findAll find all missing items. Default is to stop when first missing row found
      * @return array returns first data row that cant be found in the csv
      */
-    static function getDataMissing(array $data1, array $data2): array
+    static function getDataMissing(array $data1, array $data2, bool $findAll=false): array
     {
         $keys = self::getKeysToUse($data2[0], $data1);
+        $return=[];
         // do for the remaining data rows
         for($i = 0; $i < count($data2); $i++) {
             if (!self::checkDataRow($data1, $data2[$i], $keys)) {
-                return $data2[$i];
+                if(!$findAll){
+                    return $data2[$i];
+                }
+                $return[]=$data2[$i];
             }
         }
-        return [];
+        return $return;
     }
 
     static function checkDataRow(array $csvData, array $dataRow, array $keys): bool
