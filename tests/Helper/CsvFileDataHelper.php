@@ -12,7 +12,14 @@ class CsvFileDataHelper
     */
     static function getDataFromCsv(string $filePath, array $header=[], string $separator=','): array
     {
-        $data = array_map(fn($v) => str_getcsv($v, separator: $separator, escape: ''), file($filePath));
+        if(!file_exists($filePath)||filetype($filePath)!='file') {
+            throw new \Exception('file not found');
+        }
+        $fileContents = file($filePath);
+        if($fileContents === false) {
+            throw new \Exception('file not found');
+        }
+        $data = array_map(fn($v) => str_getcsv($v, separator: $separator, escape: ''), $fileContents);
         if(count($header)==0){
             $header = $data[0];
             array_shift($data);
