@@ -33,7 +33,7 @@ class ManyManyImporterTest extends TestCase
     protected function tearDown(): void
     {
         parent::tearDown();
-//        (new DatabaseHelper())->dropTables();
+        (new DatabaseHelper())->dropTables();
     }
 
     protected function createTables(): void
