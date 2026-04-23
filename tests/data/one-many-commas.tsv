@@ -1,7 +1,0 @@
-text1	text1b	text2	text2b
-test1	foo	foobar,foobar2,foobar3,foobar4	testing1
-test1	foo2	foobar2	testing2
-test1	foo3	bar,bar2,bar3	testing3
-test2		foobar4,foobar	testing4
-test2	foo5		testing5
-test3			testing6

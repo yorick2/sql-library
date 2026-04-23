@@ -67,13 +67,14 @@ table2)
 ## Importers
 src/Importer/SimpleImporter.php     import 1 table of data in a csv
 - getSimpleManyManySqlText() : generate SQL to import a tsv or csv into a single table
+- getSplitRecordsWithCommasSqlText() : update an existing database by splitting rows where a column contains comma separated lists
+- getSplitRecordsWithMultipleCommaColumnsSqlText() : update an existing database by splitting rows where multiple columns contain comma separated lists. Where the first item has data from before the first comma in all split columns, the second item has data after the first comma in both columns, ...
 
 src/Importer/OneManyImporter.php    import 2 tables of data in a csv, linked by column data provided
 - getSimpleManyManySqlText() : generate SQL to import a tsv or csv into a one-many database
   
 src/Importer/ManyManyImporter.php   import 2 tables of data in a csv, linked by a 3rd pivot table
 - getSimpleManyManySqlText() : generate SQL to import a simple 1-1 
-- getSplitRecordsWithCommasSqlText() : update an existing database by splitting rows where a column contains comma separated lists
 - getPivotTableImportSqlText() : generate SQL to import pivot table
 
 

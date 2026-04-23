@@ -14,9 +14,6 @@ class OneManyImporterTest extends TestCase
     protected mysqli $db;
     protected $file1='/tmp/data/one-many.csv';
     protected $file1ForPhpunit='../data/one-many.csv';
-    protected $fileCommas = '/tmp/data/one-many-commas.tsv';
-    protected $localfileCommasDesired='../data/one-many-commas-desired.tsv';
-
 
     protected function setUp(): void
     {
@@ -47,6 +44,7 @@ class OneManyImporterTest extends TestCase
                 `table1_id` int,
                 `text2` varchar(255),
                 `text2b` varchar(255),
+                `text2c` varchar(255),
                 PRIMARY KEY (id)
             );
 EOF;
@@ -95,51 +93,4 @@ EOF;
             ->compareCsvDataToTable('table2', __DIR__.'/'.$this->file1ForPhpunit);
     }
 
-    public function test_getSplitRecordsWithCommasSqlText(): void
-    {
-        $this->assertEquals(0, $this->db->query('SELECT * FROM `table1` LIMIT 1')->num_rows);
-        $this->assertEquals(0, $this->db->query('SELECT * FROM `table2` LIMIT 1')->num_rows);
-        $query=OneManyImporter::getSqlText(
-            'table1',
-            '`text1`,`text1b`',
-            'new.`text1`,new.`text1b`',
-            'table2',
-            '`table1_id`,`text2`,`text2b`',
-            'id,NEW.`text2`,NEW.`text2b`',
-            'text1',
-            '`text1` = VALUES(`text1`),`text1b` = VALUES(`text1b`)',
-            $this->fileCommas,
-            '`text1`,`text1b`,`text2`,`text2b`',
-            1,
-            '\t',
-            'temp'
-        );
-        $this->db->multi_query($query);
-        while ($this->db->next_result()){;}
-
-        $table='table2';
-        $splitCol='text2';
-        $query=OneManyImporter::getSplitRecordsWithCommasSqlText(
-            $table,
-            $splitCol,
-            '`table1_id`,`text2b`',
-            '',
-            'temp',
-            100
-        );
-        $result = $this->db->multi_query($query);
-        // do not remove. multi_query needs this to allow next query to run
-        while ($this->db->next_result()){;}
-
-        $result=$this->db
-            ->query('SELECT * FROM `'.$table.'` WHERE `'.$splitCol.'` LIKE "%,%"');
-        $this->assertEquals(0, $result->num_rows, "test has no rows containing a comma in column $splitCol");
-        (new DataTestLibrary($this->name()))
-            ->compareTableToCsvData(
-                $table,
-                __DIR__.'/'.$this->localfileCommasDesired,
-                [],
-                "\t"
-            );
-    }
 }

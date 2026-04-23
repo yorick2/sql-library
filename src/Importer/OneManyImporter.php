@@ -79,31 +79,4 @@ class OneManyImporter
         DROP TRIGGER IF EXISTS `from_load_data_to_table2`;
 EOF;
     }
-
-    /**
-     * @param string $table
-     * @param string $tableColumnToSplit
-     * @param string $remainingColumnsInTable e.g. '`table1_id`,`text2b`'
-     * @param string $additionalLoopCommand
-     * @param string $tempTable
-     * @param int $maxIterations
-     * @return string
-     */
-    static function getSplitRecordsWithCommasSqlText(
-        string $table,
-        string $tableColumnToSplit,
-        string $remainingColumnsInTable,
-        string $additionalLoopCommand='',
-        string $tempTable='temp',
-        int    $maxIterations=10000
-    ) : string
-    {
-        return  SimpleImporter::getSplitRecordsWithCommasSqlText(
-            $table,
-            $tableColumnToSplit,
-             $remainingColumnsInTable,
-             $additionalLoopCommand,
-             $tempTable,
-             $maxIterations);
-    }
 }
