@@ -76,6 +76,7 @@ EOF;
             '`text1`,`text1b`,`text2`,`text2b`',
             1,
             ',',
+            '',
             'temp'
         );
         error_reporting(E_ALL);
@@ -92,6 +93,4 @@ EOF;
             ->compareTableToCsvData('table1', __DIR__.'/'.$this->file1ForPhpunit)
             ->compareTableToCsvData('table2', __DIR__.'/'.$this->file1ForPhpunit);
     }
-    }
-
 }

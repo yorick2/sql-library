@@ -7,11 +7,12 @@ class SimpleImporter
     /**
      * generate SQL to import a tsv or csv into a single table
      *
-     * @param $table string e.g. 'table1'
-     * @param $filePath string file path e.g. '__DIR__./src/test.tsv'
-     * @param $fileColumns string e.g. 'column1,column2'
+     * @param string $table e.g. 'table1'
+     * @param string $filePath file path e.g. '__DIR__./src/test.tsv'
+     * @param string $fileColumns e.g. 'column1,column2'
      * @param int $ignoreLinesInt how many rows to ignore from table
-     * @param $fileDelimiter string e.g. '\t'
+     * @param string $fileDelimiter e.g. '\t'
+     * @param string $additionalFileImportCommand e.g. "set simple = REGEXP_REPLACE(Word,'[1234]*','')"
      * @return string
      */
     static function getSqlText(
@@ -19,7 +20,8 @@ class SimpleImporter
         string $filePath,
         string $fileColumns,
         int    $ignoreLinesInt = 0,
-        string $fileDelimiter = '\t'
+        string $fileDelimiter = '\t',
+        string $additionalFileImportCommand = ''
     )
     {
         $ignoreLinesText = '';
@@ -30,7 +32,8 @@ class SimpleImporter
             LOAD DATA INFILE '$filePath'
             IGNORE INTO TABLE `$table`
             FIELDS TERMINATED BY '$fileDelimiter'
-            $ignoreLinesText($fileColumns);
+            $ignoreLinesText($fileColumns)
+            $additionalFileImportCommand;
 EOF;
     }
 

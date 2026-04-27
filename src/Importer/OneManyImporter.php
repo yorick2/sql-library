@@ -21,6 +21,7 @@ class OneManyImporter
      * @param string $fileColumns e.g. 'column1,column2'
      * @param int $ignoreLines No. of lines to ignore in the file e.g. for the header
      * @param string $fileDelimiter e.g. '\t'
+     * @param string $additionalFileImportCommand e.g. "set simple = REGEXP_REPLACE(Word,'[1234]*','')"
      * @param string $tempTable e.g. 'temp'
      * @return string
      */
@@ -37,6 +38,7 @@ class OneManyImporter
         string $fileColumns,
         int $ignoreLines=0,
         string $fileDelimiter='\t',
+        string $additionalFileImportCommand='',
         string $tempTable='temp'
     )
     {
@@ -46,8 +48,8 @@ class OneManyImporter
         }
         return <<<EOF
         DROP TABLE IF EXISTS `$tempTable`;
-        DROP TRIGGER IF EXISTS `from_load_data`;
-        DROP TRIGGER IF EXISTS `from_load_data_2`;
+        DROP TRIGGER IF EXISTS `from_load_data_to_table1`;
+        DROP TRIGGER IF EXISTS `from_load_data_to_table2`;
 
         CREATE TABLE `$tempTable` AS
                 SELECT *
@@ -71,10 +73,11 @@ class OneManyImporter
         LOAD DATA INFILE '$filePath'
         IGNORE INTO TABLE `$tempTable`
         FIELDS TERMINATED BY '$fileDelimiter'
-        $ignoreLinesText($fileColumns);
+        $ignoreLinesText($fileColumns)
+        $additionalFileImportCommand;
         
     # cleanup
---         DROP TABLE IF EXISTS `$tempTable`;
+        DROP TABLE IF EXISTS `$tempTable`;
         DROP TRIGGER IF EXISTS `from_load_data_to_table1`;
         DROP TRIGGER IF EXISTS `from_load_data_to_table2`;
 EOF;

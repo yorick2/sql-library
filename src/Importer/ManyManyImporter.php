@@ -21,6 +21,7 @@ class ManyManyImporter
      * @param string $fileColumns e.g. 'column1,column2'
      * @param int    $ignoreLinesInt number of lines to ignore at the start of the file
      * @param string $fileDelimiter e.g. '\t'
+     * @param string $additionalFileImportCommand e.g. "set simple = REGEXP_REPLACE(Word,'[1234]*','')"
      * @param string $tempTable e.g. 'temp'
      * @return string
      */
@@ -38,6 +39,7 @@ class ManyManyImporter
         string $fileColumns,
         int    $ignoreLinesInt=0,
         string $fileDelimiter='\t',
+        string $additionalFileImportCommand='',
         string $tempTable='temp'
     ) : string
     {
@@ -79,7 +81,8 @@ class ManyManyImporter
         LOAD DATA INFILE '$filePath'
         IGNORE INTO TABLE `$tempTable`
         FIELDS TERMINATED BY '$fileDelimiter'
-        $ignoreLinesText($fileColumns);
+        $ignoreLinesText($fileColumns)
+        $additionalFileImportCommand;
 
         # cleanup
         SET FOREIGN_KEY_CHECKS=1;
@@ -102,6 +105,7 @@ EOF;
      * @param array $refColumns the column the tables to match the file data to. In the order of the related column in the file e.g. ['ref','ref']
      * @param int $ignoreLinesInt number of lines to ignore at the start of the file
      * @param string $fileDelimiter e.g. '\t'
+     * @param string $additionalFileImportCommand e.g. "set simple = REGEXP_REPLACE(Word,'[1234]*','')"
      * @return string
      */
     static function getPivotTableImportSqlText(
@@ -111,7 +115,8 @@ EOF;
         array $tables,
         array $refColumns,
         int    $ignoreLinesInt=0,
-        string $fileDelimiter='\t'
+        string $fileDelimiter='\t',
+        string $additionalFileImportCommand=''
     ) : string
     {
         $ignoreLinesText='';
@@ -132,6 +137,7 @@ EOF;
         for($i=0; $i<count($pivotTableColumns); $i++){
             $query.= "`$pivotTableColumns[$i]` = (SELECT `id` FROM `$tables[$i]` WHERE `$refColumns[$i]` = @ref$i),";
         }
-        return rtrim($query,',').';';
+        return rtrim($query,',').'
+        '.$additionalFileImportCommand.';';
     }
 }
