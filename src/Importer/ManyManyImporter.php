@@ -24,7 +24,7 @@ class ManyManyImporter
      * @param string $tempTable e.g. 'temp'
      * @return string
      */
-    static function getSimpleManyManySqlText(
+    static function getSqlText(
         string $startID,
         string $pivotTable,
         string $pivotTableColumns,

@@ -90,7 +90,8 @@ EOF;
 
         (new DataTestLibrary($this->name()))
             ->compareTableToCsvData('table1', __DIR__.'/'.$this->file1ForPhpunit)
-            ->compareCsvDataToTable('table2', __DIR__.'/'.$this->file1ForPhpunit);
+            ->compareTableToCsvData('table2', __DIR__.'/'.$this->file1ForPhpunit);
+    }
     }
 
 }

@@ -70,7 +70,7 @@ EOF;
         $this->assertEquals(0, $this->db->query('SELECT * FROM `link` LIMIT 1')->num_rows);
         $this->assertEquals(0, $this->db->query('SELECT * FROM `table1` LIMIT 1')->num_rows);
         $this->assertEquals(0, $this->db->query('SELECT * FROM `table2` LIMIT 1')->num_rows);
-        $query=ManyManyImporter::getSimpleManyManySqlText(
+        $query=ManyManyImporter::getSqlText(
             100,
             'link',
             '`table1_id`,`table2_id`',

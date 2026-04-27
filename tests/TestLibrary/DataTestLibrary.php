@@ -40,27 +40,4 @@ class DataTestLibrary extends TestCase
         );
         return $this;
     }
-
-    /**
-     * @param string $tableName
-     * @param string $localFilePath
-     * @return DataTestLibrary
-     */
-    public function compareCsvDataToTable(string $tableName, string $localFilePath) : DataTestLibrary
-    {
-        $data=DatabaseSqlHelper::getInstance()->getConnection()
-            ->query('SELECT * FROM `'.$tableName.'`')
-            ->fetch_all(MYSQLI_ASSOC);
-        $missing=DataHelper::getDataMissing(
-            $data,
-            CsvFileDataHelper::getDataFromCsv($localFilePath),
-        false
-        );
-        $this->assertEquals(
-            0,
-            count($missing),
-            'Compare csv data to database table `'.$tableName.'`'
-        );
-        return $this;
-    }
 }
