@@ -6,8 +6,8 @@ use mysqli;
 
 class DatabaseSqlHelper
 {
-    private static $instance;
-    private $connection;
+    private static self $instance;
+    private mysqli $connection;
 
     protected function __clone()
     {

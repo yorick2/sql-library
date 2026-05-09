@@ -12,8 +12,8 @@ use PHPUnit\Framework\TestCase;
 class OneManyImporterTest extends TestCase
 {
     protected mysqli $db;
-    protected $file1='/tmp/data/one-many.csv';
-    protected $file1ForPhpunit='../data/one-many.csv';
+    protected string $file1='/tmp/data/one-many.csv';
+    protected string $file1ForPhpunit='../data/one-many.csv';
 
     protected function setUp(): void
     {

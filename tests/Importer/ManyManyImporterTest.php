@@ -13,13 +13,13 @@ use PaulMillband\SqlLibrary\Importer\ManyManyImporter;
 class ManyManyImporterTest extends TestCase
 {
     protected mysqli $db;
-     protected $localFileSimple = '../data/many-many-simple.tsv';
-    protected $localFileComplexDesired = '../data/many-many-complex-desired.tsv';
-    protected $fileSimple = '/tmp/data/many-many-simple.tsv';
-    protected $fileComplex1 = '/tmp/data/many-many-complex-1.tsv';
-    protected $fileComplex2 = '/tmp/data/many-many-complex-2.tsv';
-    protected $fileComplexPivot = '/tmp/data/many-many-complex-pivot.tsv';
-    protected $fileComplexDesired = '/tmp/data/many-many-complex-desired.tsv';
+    protected string $localFileSimple = '../data/many-many-simple.tsv';
+    protected string $localFileComplexDesired = '../data/many-many-complex-desired.tsv';
+    protected string $fileSimple = '/tmp/data/many-many-simple.tsv';
+    protected string $fileComplex1 = '/tmp/data/many-many-complex-1.tsv';
+    protected string $fileComplex2 = '/tmp/data/many-many-complex-2.tsv';
+    protected string $fileComplexPivot = '/tmp/data/many-many-complex-pivot.tsv';
+    protected string $fileComplexDesired = '/tmp/data/many-many-complex-desired.tsv';
 
     protected function setUp(): void
     {

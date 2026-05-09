@@ -1,0 +1,6 @@
+test1	foo	no.1
+test1	bar	no.1
+test1		no.1
+test2	barbar	other
+test2		other
+test3		other
