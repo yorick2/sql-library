@@ -1,7 +1,7 @@
 text1	text1b	text1c
 test1	1	foobar
-test2	1	foobar2
-test3	1	foobar3
+test2	2	foobar2
+test3	2	foobar3
 test4	2	foobar4
-test4	2	sheep
+test4	3	sheep
 test4	3	sheep2

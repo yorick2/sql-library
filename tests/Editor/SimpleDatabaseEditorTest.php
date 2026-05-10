@@ -20,6 +20,7 @@ class SimpleDatabaseEditorTest extends TestCase
     protected string $localFileCommaMultipleColumnsDesired = '../data/editor-comma-multiple-columns-desired.tsv';
     protected string $fileAsPrevious = '/tmp/data/editor-set-column-as-previous.tsv';
     protected string $localFileAsPreviousDesired = '../data/editor-set-column-as-previous-desired.tsv';
+    protected string $localFileAsPreviousDescDesired = '../data/editor-set-column-as-previous-desc-desired.tsv';
     protected string $localFileTriggerDesired = '../data/editor-trigger-desired.tsv';
     protected string $localFileTriggerIfElseDesired = '../data/editor-trigger-if-else-desired.tsv';
 
@@ -165,7 +166,8 @@ EOF;
             $table,
             'text1b',
             'id',
-            true
+            true,
+            'temp'
         );
         $this->db->multi_query($query);
         // do not remove. multi_query needs this to allow next query to run
@@ -176,6 +178,41 @@ EOF;
             ->compareTableToCsvData(
                 $table,
                 __DIR__ . '/' . $this->localFileAsPreviousDesired,
+                [],
+                "\t"
+            );
+    }
+
+    public function test_Desc_getSetColumnValueAsLastValueWhenNotSetSqlText()
+    {
+        $table = 'table1';
+        $this->assertEquals(0, $this->db->query("SELECT * FROM `$table` LIMIT 1")->num_rows);
+        $query = SimpleImporter::getSqlText(
+            $table,
+            $this->fileAsPrevious,
+            '`text1`,`text1b`,`text1c`',
+        );
+        $this->db->multi_query($query);
+        while ($this->db->next_result()) {
+            ;
+        }
+
+        $query = SimpleDatabaseEditor::getSetColumnValueAsLastValueWhenNotSetSqlText(
+            $table,
+            'text1b',
+            'id',
+            false,
+            'temp'
+        );
+        $this->db->multi_query($query);
+        // do not remove. multi_query needs this to allow next query to run
+        while ($this->db->next_result()) {
+            ;
+        }
+        (new DataTestLibrary($this->name()))
+            ->compareTableToCsvData(
+                $table,
+                __DIR__ . '/' . $this->localFileAsPreviousDescDesired,
                 [],
                 "\t"
             );

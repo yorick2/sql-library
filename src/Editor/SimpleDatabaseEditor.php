@@ -45,13 +45,19 @@ class SimpleDatabaseEditor
         ): string
         {
         $newColumn = "new_$column";
+        $ascText = "Asc";
+        $where = "$orderingColumn > t.$orderingColumn AND $column != 0";
+        if($orderAsc === true){
+            $ascText = "DESC";
+            $where = "$orderingColumn < t.$orderingColumn AND $column != 0";
+        }
         return <<<EOF
         CREATE TEMPORARY TABLE $tempTable AS
-        SELECT t.id, (
+        SELECT t.$orderingColumn, (
             SELECT $column
             FROM `$table`
-            WHERE $orderingColumn < t.$orderingColumn AND $column != 0
-            ORDER BY id DESC
+            WHERE $where
+            ORDER BY $orderingColumn $ascText
             LIMIT 1
         ) AS $newColumn
         FROM `$table` t
