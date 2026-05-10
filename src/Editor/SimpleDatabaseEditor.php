@@ -11,20 +11,60 @@ class SimpleDatabaseEditor
      * @param string $table
      * @param string $column
      * @param string $orderingColumn
-     * @param boolean $asc
+     * @param boolean $orderAsc
      * @return string
      */
-    static function getSetColumnValueAsLastValueIfNotSetSqlText(
+    static function getSetColumnValueAsLastValueIfNotSetSqlTriggerText(
         string $table,
         string $column,
         string $orderingColumn='id',
-        bool $asc=false
+        bool $orderAsc=true,
+        string $tempTable = 'temp'
     ): string
     {
-        if ($asc){
+        if ($orderAsc){
             return "SET new.`$table` = (SELECT `$table` from `$column` ORDER BY `$orderingColumn` ASC LIMIT 1);";
         }
         return "SET new.`$table` = (SELECT `$table` from `$column` ORDER BY `$orderingColumn` DESC LIMIT 1);";
+    }
+
+        /**
+         * set each rows value for a given column to the value of the column in the previous row
+         * @param string $table
+         * @param string $column
+         * @param string $orderingColumn
+         * @param boolean $orderAsc
+         * @return string
+         */
+        static function getSetColumnValueAsLastValueWhenNotSetSqlText(
+            string $table,
+            string $column,
+            string $orderingColumn='id',
+            bool $orderAsc=true,
+            string $tempTable = 'temp'
+        ): string
+        {
+        $newColumn = "new_$column";
+        return <<<EOF
+        CREATE TEMPORARY TABLE $tempTable AS
+        SELECT t.id, (
+            SELECT $column
+            FROM `$table`
+            WHERE $orderingColumn < t.$orderingColumn AND $column != 0
+            ORDER BY id DESC
+            LIMIT 1
+        ) AS $newColumn
+        FROM `$table` t
+        WHERE t.$column = 0;
+
+        UPDATE $tempTable set $newColumn = 0 where $newColumn is NULL;
+
+        UPDATE `$table` t
+        JOIN $tempTable temp ON t.$orderingColumn = temp.$orderingColumn
+        SET t.$column = temp.$newColumn;
+
+        DROP TEMPORARY TABLE $tempTable;
+EOF;
     }
 
     /**

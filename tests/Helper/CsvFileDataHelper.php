@@ -8,8 +8,10 @@ class CsvFileDataHelper
     /**
      * @param string $filePath
      * @param array $header array of column names, leave blank if header exists as first line in file
+     * @param string $separator
      * @return array an associated array for the csv data e.g. [ ["col1"=>"1","col2"=>"9"], ["col1"=>"4","col2"=>"6"] ]
-    */
+     * @throws \Exception
+     */
     static function getDataFromCsv(string $filePath, array $header=[], string $separator=','): array
     {
         if(!file_exists($filePath)||filetype($filePath)!='file') {

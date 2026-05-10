@@ -25,18 +25,18 @@ class DataTestLibrary extends TestCase
      */
     public function compareTableToCsvData(string $tableName, string $localFilePath, array $header=[], string $separator=','): DataTestLibrary
     {
-        $data=DatabaseSqlHelper::getInstance()->getConnection()
+        $databaseData=DatabaseSqlHelper::getInstance()->getConnection()
             ->query('SELECT * FROM `'.$tableName.'`')
             ->fetch_all(MYSQLI_ASSOC);
         $missing=DataHelper::getDataMissing(
             CsvFileDataHelper::getDataFromCsv($localFilePath, $header, $separator),
-            $data,
+            $databaseData,
             false
         );
         $this->assertEquals(
             0,
             count($missing),
-            'Compare database table to csv data`'.$tableName.'`'
+            "Database table `$tableName` didnt match csv data"
         );
         return $this;
     }

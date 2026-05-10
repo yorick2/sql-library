@@ -9,9 +9,8 @@ use PaulMillband\SqlLibrary\tests\Helper\DatabaseSqlHelper;
 use PaulMillband\SqlLibrary\tests\TestLibrary\DataTestLibrary;
 use PHPUnit\Framework\TestCase;
 use PaulMillband\SqlLibrary\Importer\SimpleImporter;
-use function PHPUnit\Framework\assertTrue;
 
-class SimpleEditorTest extends TestCase
+class SimpleDatabaseEditorTest extends TestCase
 {
     protected mysqli $db;
     protected string $file = '/tmp/data/simple.tsv';
@@ -142,16 +141,15 @@ EOF;
         (new DataTestLibrary($this->name()))
             ->compareTableToCsvData(
                 $table,
-                __DIR__ . '/' . $this->localFileCommasDesired,
+                __DIR__ . '/' . $this->localFileCommaMultipleColumnsDesired,
                 [],
                 "\t"
             );
     }
 
-    public function test_getSetColumnValueAsLastValueIfNotSetSqlText()
+    public function test_getSetColumnValueAsLastValueWhenNotSetSqlText()
     {
         $table = 'table1';
-        $splitCols = ['text1b', 'text1c'];
         $this->assertEquals(0, $this->db->query("SELECT * FROM `$table` LIMIT 1")->num_rows);
         $query = SimpleImporter::getSqlText(
             $table,
@@ -163,28 +161,17 @@ EOF;
             ;
         }
 
-        $query = SimpleDatabaseEditor::getSplitRecordsWithMultipleCommaColumnsSqlText(
+        $query = SimpleDatabaseEditor::getSetColumnValueAsLastValueWhenNotSetSqlText(
             $table,
-            $splitCols,
-            '`text1`',
-            '',
-            'temp',
-            100
+            'text1b',
+            'id',
+            true
         );
-        $result = $this->db->multi_query($query);
+        $this->db->multi_query($query);
         // do not remove. multi_query needs this to allow next query to run
         while ($this->db->next_result()) {
             ;
         }
-
-        $result = $this->db
-            ->query('SELECT * FROM `' . $table . '` WHERE `' . $splitCols[0] . '` LIKE "%,%"');
-        $this->assertEquals(0, $result->num_rows, "test has no rows containing a comma in column $splitCols[0]");
-
-        $result = $this->db
-            ->query('SELECT * FROM `' . $table . '`');
-        $this->assertEquals(5, $result->num_rows, "not the right number of rows");
-
         (new DataTestLibrary($this->name()))
             ->compareTableToCsvData(
                 $table,
@@ -193,6 +180,7 @@ EOF;
                 "\t"
             );
     }
+
     public function test_getTriggerSqlText()
     {
         $table = 'table1';
@@ -221,7 +209,8 @@ EOF;
     }
 
     public function test_getTriggerIfElseSqlText()
-    {$table = 'table1';
+    {
+        $table = 'table1';
         $this->assertEquals(0, $this->db->query("SELECT * FROM `$table` LIMIT 1")->num_rows);
         $query = SimpleDatabaseEditor::getTriggerIfElseSqlText(
                 $table,

@@ -1,6 +1,7 @@
-test1	foo	foobanana
-test1	bar	barbanana
+text1	text1b	text1c
+test1	foo	banana
+test1	bar	foobarbanana
 test1		banana
-test2	barbar	barbarbanana
-test2		banana
-test3		banana
+test2	barbar	banana
+test2		foobanana
+test3		barbanana

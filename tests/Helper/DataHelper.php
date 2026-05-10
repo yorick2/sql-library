@@ -2,6 +2,8 @@
 
 namespace PaulMillband\SqlLibrary\tests\Helper;
 
+use function PHPUnit\Framework\throwException;
+
 class DataHelper
 {
     /**
@@ -12,41 +14,48 @@ class DataHelper
      */
     static function getDataMissing(array $data1, array $data2, bool $findAll=false): array
     {
-        $keys = self::getKeysToUse($data2[0], $data1);
-        $return=[];
+        $keys = self::getKeysToUsedInBothArrays($data2[0], $data1[0]);
+        if (count($keys) === 0) {
+            throw new \Exception('No keys matched between arrays given');
+        }
+        $returnArray=[];
         // do for the remaining data rows
         for($i = 0; $i < count($data2); $i++) {
             if (!self::checkDataRow($data1, $data2[$i], $keys)) {
                 if(!$findAll){
                     return $data2[$i];
                 }
-                $return[]=$data2[$i];
+                $returnArray[]=$data2[$i];
             }
         }
-        return $return;
+        return $returnArray;
     }
 
-    static function checkDataRow(array $csvData, array $dataRow, array $keys): bool
+    /**
+     * note: only use simple associated arrays, not multidimensional arrays
+     * @param array $data
+     * @param array $data2
+     * @return array
+     */
+    static function getKeysToUsedInBothArrays(array $data, array $data2): array
     {
-        if ( !self::checkDataRowAgainstCsv($dataRow, $csvData, $keys) ) {
-            return false;
-        }
-        return true;
-    }
-
-    static function getKeysToUse(array $data, array $csvData): array
-    {
-        $csvKeys = array_keys($csvData[0]);
-        $count = count($csvKeys);
+        $data2Keys = array_keys($data2);
+        $count = count($data2Keys);
         for ($i = 0; $i < $count; $i++) {
-            if (!array_key_exists($csvKeys[$i], $data)) {
-                unset($csvKeys[$i]);
+            if (!array_key_exists($data2Keys[$i], $data)) {
+                unset($data2Keys[$i]);
             }
         }
-        return $csvKeys;
+        return $data2Keys;
     }
 
-    static function checkDataRowAgainstCsv(array $dataRow, array $csvData, array $keys)
+    /**
+     * @param array $csvData
+     * @param array $dataRow
+     * @param array $keys
+     * @return bool
+     */
+    static function checkDataRow(array $csvData, array $dataRow, array $keys) : bool
     {
         $count = count($csvData);
         for ($i = 0; $i < $count; $i++) {
@@ -58,6 +67,12 @@ class DataHelper
         return false;
     }
 
+    /**
+     * @param array $dataRow
+     * @param array $csvDataRow
+     * @param array $keys
+     * @return bool
+     */
     static function checkAgainstCsvRow(array $dataRow, array $csvDataRow, array $keys): bool
     {
         foreach ($keys as $singleKey) {

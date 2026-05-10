@@ -63,6 +63,12 @@ EOF;
         $this->assertNotEquals(0, $this->db->query('SELECT * FROM `table1` LIMIT 1')->num_rows);
 
         (new DataTestLibrary($this->name()))
-            ->compareTableToCsvData('table1', __DIR__.'/'.$this->localFile, ['text1','text1b','text1c'], "\t");
+            ->compareTableToCsvData(
+                'table1',
+                __DIR__.'/'.
+                $this->localFile,
+                ['text1','text1b','text1c'],
+                "\t"
+            );
     }
 }
