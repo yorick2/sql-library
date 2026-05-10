@@ -2,7 +2,7 @@
 
 namespace PaulMillband\SqlLibrary\Editor;
 
-class SimpleEditor
+class SimpleDatabaseEditor
 {
 
 

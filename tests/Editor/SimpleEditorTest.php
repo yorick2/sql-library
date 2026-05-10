@@ -3,7 +3,7 @@
 namespace PaulMillband\SqlLibrary\tests\Editor;
 
 use mysqli;
-use PaulMillband\SqlLibrary\Editor\SimpleEditor;
+use PaulMillband\SqlLibrary\Editor\SimpleDatabaseEditor;
 use PaulMillband\SqlLibrary\tests\Helper\DatabaseHelper;
 use PaulMillband\SqlLibrary\tests\Helper\DatabaseSqlHelper;
 use PaulMillband\SqlLibrary\tests\TestLibrary\DataTestLibrary;
@@ -71,7 +71,7 @@ EOF;
             ;
         }
 
-        $query = SimpleEditor::getSplitRecordsWithCommasSqlText(
+        $query = SimpleDatabaseEditor::getSplitRecordsWithCommasSqlText(
             $table,
             $splitCol,
             '`text1`,`text1c`',
@@ -117,7 +117,7 @@ EOF;
             ;
         }
 
-        $query = SimpleEditor::getSplitRecordsWithMultipleCommaColumnsSqlText(
+        $query = SimpleDatabaseEditor::getSplitRecordsWithMultipleCommaColumnsSqlText(
             $table,
             $splitCols,
             '`text1`',
@@ -163,7 +163,7 @@ EOF;
             ;
         }
 
-        $query = SimpleEditor::getSplitRecordsWithMultipleCommaColumnsSqlText(
+        $query = SimpleDatabaseEditor::getSplitRecordsWithMultipleCommaColumnsSqlText(
             $table,
             $splitCols,
             '`text1`',
@@ -197,7 +197,7 @@ EOF;
     {
         $table = 'table1';
         $this->assertEquals(0, $this->db->query("SELECT * FROM `$table` LIMIT 1")->num_rows);
-        $query = simpleEditor::getTriggerSqlText(
+        $query = SimpleDatabaseEditor::getTriggerSqlText(
                 $table,
                 'testTrigger',
             'SET new.`text1c` = concat(new.`text1c`, "banana");'
@@ -223,7 +223,7 @@ EOF;
     public function test_getTriggerIfElseSqlText()
     {$table = 'table1';
         $this->assertEquals(0, $this->db->query("SELECT * FROM `$table` LIMIT 1")->num_rows);
-        $query = simpleEditor::getTriggerIfElseSqlText(
+        $query = SimpleDatabaseEditor::getTriggerIfElseSqlText(
                 $table,
                 'testTrigger',
                 'new.`text1`="test1"',
