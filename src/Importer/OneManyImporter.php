@@ -2,12 +2,10 @@
 
 namespace PaulMillband\SqlLibrary\Importer;
 
-use PaulMillband\SqlLibrary\Importer\SimpleImporter;
-
 class OneManyImporter
 {
     /**
-     * generate SQL to import a tsv or csv into a one-many database
+     * generate SQL to import a tsv or csv into a one-many database as two tables
      *
      * @param string $table1 string e.g. 'table1'
      * @param string $columnsForTable1 e.g. '`column1`,`column2`'
@@ -19,7 +17,7 @@ class OneManyImporter
      * @param string $onDuplicateText how to fill columns when duplicate e.g. '`text1` = VALUES(`text1`), `text1b` = VALUES(`text1b`)'
      * @param string $filePath file path e.g. '__DIR__./src/test.tsv'
      * @param string $fileColumns e.g. 'column1,column2'
-     * @param int $ignoreLines No. of lines to ignore in the file e.g. for the header
+     * @param int $ignoreLinesQty No. of lines to ignore in the file e.g. for the header
      * @param string $fileDelimiter e.g. '\t'
      * @param string $additionalFileImportCommand e.g. "set simple = REGEXP_REPLACE(Word,'[1234]*','')"
      * @param string $tempTable e.g. 'temp'
@@ -36,15 +34,15 @@ class OneManyImporter
         string $onDuplicateText,
         string $filePath,
         string $fileColumns,
-        int $ignoreLines=0,
+        int    $ignoreLinesQty=0,
         string $fileDelimiter='\t',
         string $additionalFileImportCommand='',
         string $tempTable='temp'
     )
     {
         $ignoreLinesText='';
-        if($ignoreLines>0){
-            $ignoreLinesText="IGNORE $ignoreLines LINES\n";
+        if($ignoreLinesQty>0){
+            $ignoreLinesText="IGNORE $ignoreLinesQty LINES\n";
         }
         return <<<EOF
         DROP TABLE IF EXISTS `$tempTable`;
@@ -80,6 +78,72 @@ class OneManyImporter
         DROP TABLE IF EXISTS `$tempTable`;
         DROP TRIGGER IF EXISTS `from_load_data_to_table1`;
         DROP TRIGGER IF EXISTS `from_load_data_to_table2`;
+EOF;
+    }
+
+    /**
+     * generate SQL to import a tsv or csv into a one-many database
+     *
+     * @param string $destinationTable string e.g. 'table1'
+     * @param string $columnsForTable e.g. '`column1`,`column2`'
+     * @param string $valueColumnsForTable e.g. 'NEW.`column1`,NEW.`column2`
+     * @param string $referenceTable string e.g. 'table1'
+     * @param string $linkColumnInTable2,e.g. `column2`'
+     * @param string $onDuplicateText how to fill columns when duplicate e.g. '`text1` = VALUES(`text1`), `text1b` = VALUES(`text1b`)'
+     * @param string $filePath file path e.g. '__DIR__./src/test.tsv'
+     * @param string $fileColumns e.g. 'column1,column2'
+     * @param int $ignoreLinesQty No. of lines to ignore in the file e.g. for the header
+     * @param string $fileDelimiter e.g. '\t'
+     * @param string $additionalFileImportCommand e.g. "set simple = REGEXP_REPLACE(Word,'[1234]*','')"
+     * @param string $tempTable e.g. 'temp'
+     * @return string
+     */
+    static function getAddNewTableSql(
+        string $destinationTable,
+        string $referenceTable,
+        string $fileLinkToReferenceTable,
+        string $ReferenceTableLinkToFile,
+        string $DestinationTableLinkToReferenceTable,
+        string $ReferenceTableLinkToDestinationTable,
+        string $filePath,
+        string $fileColumns,
+        int    $ignoreLinesQty=0,
+        string $fileDelimiter='\t',
+        string $additionalFileImportCommand='',
+        string $tempTable='temp'
+    )
+    {
+        $ignoreLinesText='';
+        if($ignoreLinesQty>0){
+            $ignoreLinesText="IGNORE $ignoreLinesQty LINES\n";
+        }
+        return <<<EOF
+        DROP TABLE IF EXISTS `$tempTable`;
+
+        CREATE TABLE `$tempTable` AS
+            SELECT d.*, r.`$fileLinkToReferenceTable`
+            FROM `$destinationTable` d
+            NATURAL JOIN `$referenceTable` r
+            LIMIT 0;
+        
+        LOAD DATA INFILE '$filePath'
+            IGNORE INTO TABLE `$tempTable`
+            FIELDS TERMINATED BY '$fileDelimiter'
+            $ignoreLinesText($fileColumns)
+            $additionalFileImportCommand;
+
+        UPDATE `$tempTable` t
+            INNER JOIN `$referenceTable` r
+                ON t.$fileLinkToReferenceTable = r.$ReferenceTableLinkToFile
+            SET t.$DestinationTableLinkToReferenceTable = r.$ReferenceTableLinkToDestinationTable;
+
+        ALTER TABLE `$tempTable` DROP COLUMN `$fileLinkToReferenceTable`;
+        INSERT INTO `$destinationTable`
+            SELECT *
+            FROM `$tempTable`;
+
+    # cleanup
+        DROP TABLE IF EXISTS `$tempTable`;
 EOF;
     }
 }

@@ -4,6 +4,7 @@ namespace PaulMillband\SqlLibrary\tests\Importer;
 
 use mysqli;
 use PaulMillband\SqlLibrary\Importer\OneManyImporter;
+use PaulMillband\SqlLibrary\Importer\SimpleImporter;
 use PaulMillband\SqlLibrary\tests\Helper\DatabaseHelper;
 use PaulMillband\SqlLibrary\tests\Helper\DatabaseSqlHelper;
 use PaulMillband\SqlLibrary\tests\TestLibrary\DataTestLibrary;
@@ -12,8 +13,11 @@ use PHPUnit\Framework\TestCase;
 class OneManyImporterTest extends TestCase
 {
     protected mysqli $db;
-    protected string $file1='/tmp/data/one-many.csv';
-    protected string $file1ForPhpunit='../data/one-many.csv';
+    protected string $file='/tmp/data/one-many.csv';
+    protected string $localFile='../data/one-many.csv';
+    protected string $fileNewTable1='/tmp/data/one-many-new-table-file1.csv';
+    protected string $fileNewTable2='/tmp/data/one-many-new-table-file2.csv';
+    protected string $localFileNewTableDesired='../data/one-many-new-table-desired.csv';
 
     protected function setUp(): void
     {
@@ -72,7 +76,7 @@ EOF;
             'id,NEW.`text2`,NEW.`text2b`',
             'text1',
             '`text1` = VALUES(`text1`),`text1b` = VALUES(`text1b`)',
-            $this->file1,
+            $this->file,
             '`text1`,`text1b`,`text2`,`text2b`',
             1,
             ',',
@@ -90,7 +94,47 @@ EOF;
         $this->assertNotEquals(0, $this->db->query('SELECT * FROM `table2` LIMIT 1')->num_rows);
 
         (new DataTestLibrary($this->name()))
-            ->compareTableToCsvData('table1', __DIR__.'/'.$this->file1ForPhpunit)
-            ->compareTableToCsvData('table2', __DIR__.'/'.$this->file1ForPhpunit);
+            ->compareTableToCsvData('table1', __DIR__.'/'.$this->localFile)
+            ->compareTableToCsvData('table2', __DIR__.'/'.$this->localFile);
+    }
+
+    public function test_getSimpleOneManyAddNewTableSqlText_works(): void
+    {
+        $this->assertEquals(0, $this->db->query('SELECT * FROM `table1` LIMIT 1')->num_rows);
+        $this->assertEquals(0, $this->db->query('SELECT * FROM `table2` LIMIT 1')->num_rows);
+        $query=SimpleImporter::getSqlText(
+            'table1',
+                $this->fileNewTable1,
+                '`text1`,`text1b`',
+                1,
+                ',',
+                ''
+        )
+            .OneManyImporter::getaddNewTableSql(
+                'table2',
+                'table1',
+                'text1',
+                'text1',
+                'table1_id',
+                'id',
+                $this->fileNewTable2,
+                '`text1`,`text2`,`text2b`',
+                1,
+                ',',
+                '',
+                'temp'
+            );
+        error_reporting(E_ALL);
+        $this->db->multi_query($query);
+        // do not remove. multi_query needs this to allow next query to run
+        while ($this->db->next_result())
+        {
+            //   dont delete while statement
+        }
+        $this->assertNotEquals(0, $this->db->query('SELECT * FROM `table1` LIMIT 1')->num_rows);
+        $this->assertNotEquals(0, $this->db->query('SELECT * FROM `table2` LIMIT 1')->num_rows);
+
+        (new DataTestLibrary($this->name()))
+            ->compareTableToCsvData('table2', __DIR__.'/'.$this->localFileNewTableDesired);
     }
 }

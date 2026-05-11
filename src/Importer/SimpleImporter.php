@@ -10,7 +10,7 @@ class SimpleImporter
      * @param string $table e.g. 'table1'
      * @param string $filePath file path e.g. '__DIR__./src/test.tsv'
      * @param string $fileColumns e.g. 'column1,column2'
-     * @param int $ignoreLinesInt how many rows to ignore from table
+     * @param int $ignoreLinesQty how many rows to ignore from table
      * @param string $fileDelimiter e.g. '\t'
      * @param string $additionalFileImportCommand e.g. "set simple = REGEXP_REPLACE(Word,'[1234]*','')"
      * @return string
@@ -19,14 +19,14 @@ class SimpleImporter
         string $table,
         string $filePath,
         string $fileColumns,
-        int    $ignoreLinesInt = 0,
+        int    $ignoreLinesQty = 0,
         string $fileDelimiter = '\t',
         string $additionalFileImportCommand = ''
     )
     {
         $ignoreLinesText = '';
-        if ($ignoreLinesInt) {
-            $ignoreLinesText = "IGNORE $ignoreLinesInt LINES\n";
+        if ($ignoreLinesQty) {
+            $ignoreLinesText = "IGNORE $ignoreLinesQty LINES\n";
         }
         return <<<EOF
             LOAD DATA INFILE '$filePath'

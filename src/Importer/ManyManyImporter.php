@@ -19,7 +19,7 @@ class ManyManyImporter
      * @param string $valueColumnsForTable2 e.g. 'id, NEW.`column3`,NEW.`column4`'
      * @param string $filePath file path e.g. '__DIR__./src/test.tsv'
      * @param string $fileColumns e.g. 'column1,column2'
-     * @param int    $ignoreLinesInt number of lines to ignore at the start of the file
+     * @param int    $ignoreLinesQty number of lines to ignore at the start of the file
      * @param string $fileDelimiter e.g. '\t'
      * @param string $additionalFileImportCommand e.g. "set simple = REGEXP_REPLACE(Word,'[1234]*','')"
      * @param string $tempTable e.g. 'temp'
@@ -37,15 +37,15 @@ class ManyManyImporter
         string $valueColumnsForTable2,
         string $filePath,
         string $fileColumns,
-        int    $ignoreLinesInt=0,
+        int    $ignoreLinesQty=0,
         string $fileDelimiter='\t',
         string $additionalFileImportCommand='',
         string $tempTable='temp'
     ) : string
     {
         $ignoreLinesText='';
-        if ($ignoreLinesInt){
-            $ignoreLinesText="IGNORE $ignoreLinesInt LINES\n";
+        if ($ignoreLinesQty){
+            $ignoreLinesText="IGNORE $ignoreLinesQty LINES\n";
         }
         return <<<EOF
         # clean workspace
@@ -103,7 +103,7 @@ EOF;
      * @param array $pivotTableColumns pivot table columns in the order of the related column in the file e.g. ['table1_id','table2_id']
      * @param array $tables tables in the order of the related column in the file e.g. ['table1','table2']
      * @param array $refColumns the column the tables to match the file data to. In the order of the related column in the file e.g. ['ref','ref']
-     * @param int $ignoreLinesInt number of lines to ignore at the start of the file
+     * @param int $ignoreLinesQty number of lines to ignore at the start of the file
      * @param string $fileDelimiter e.g. '\t'
      * @param string $additionalFileImportCommand e.g. "set simple = REGEXP_REPLACE(Word,'[1234]*','')"
      * @return string
@@ -111,17 +111,17 @@ EOF;
     static function getPivotTableImportSqlText(
         string $pivotTable,
         string $filePath,
-        array $pivotTableColumns,
-        array $tables,
-        array $refColumns,
-        int    $ignoreLinesInt=0,
+        array  $pivotTableColumns,
+        array  $tables,
+        array  $refColumns,
+        int    $ignoreLinesQty=0,
         string $fileDelimiter='\t',
         string $additionalFileImportCommand=''
     ) : string
     {
         $ignoreLinesText='';
-        if ($ignoreLinesInt){
-            $ignoreLinesText="IGNORE $ignoreLinesInt LINES\n";
+        if ($ignoreLinesQty){
+            $ignoreLinesText="IGNORE $ignoreLinesQty LINES\n";
         }
         $query = <<<EOF
             LOAD DATA INFILE '$filePath'
