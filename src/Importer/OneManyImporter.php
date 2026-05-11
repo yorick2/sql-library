@@ -107,6 +107,7 @@ EOF;
         string $referenceTableLinkToDestinationTable,
         string $filePath,
         string $fileColumns,
+        bool   $fileLinkColumnExists = false,
         int    $ignoreLinesQty=0,
         string $fileDelimiter='\t',
         string $additionalFileImportCommand='',
@@ -117,12 +118,20 @@ EOF;
         if($ignoreLinesQty>0){
             $ignoreLinesText="IGNORE $ignoreLinesQty LINES\n";
         }
+        $selections = "d.*";
+        $dropfileLinkColumn='';
+        if($fileLinkColumnExists === false){
+            // not wanted in destination folder
+            $dropfileLinkColumn="ALTER TABLE `$tempTable` DROP COLUMN `$fileLinkToReferenceTable`;";
+
+            // adds a column with the column type of $referenceTableLinkToFile, but named $fileLinkToReferenceTable
+            $selections = "d.*, r.`$referenceTableLinkToFile` As `$fileLinkToReferenceTable`";
+        }
         return <<<EOF
         DROP TABLE IF EXISTS `$tempTable`;
 
         CREATE TABLE `$tempTable` AS
-            SELECT d.*,
-                   r.`$referenceTableLinkToFile` As `$fileLinkToReferenceTable`
+            SELECT $selections
             FROM `$destinationTable` d
             NATURAL JOIN `$referenceTable` r
             LIMIT 0;
@@ -138,7 +147,7 @@ EOF;
                 ON t.$fileLinkToReferenceTable = r.$referenceTableLinkToFile
             SET t.$destinationTableLinkToReferenceTable = r.$referenceTableLinkToDestinationTable;
 
-        ALTER TABLE `$tempTable` DROP COLUMN `$referenceTableLinkToFile`;
+        $dropfileLinkColumn
         INSERT INTO `$destinationTable`
             SELECT *
             FROM `$tempTable`;
