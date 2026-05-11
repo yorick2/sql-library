@@ -102,9 +102,9 @@ EOF;
         string $destinationTable,
         string $referenceTable,
         string $fileLinkToReferenceTable,
-        string $ReferenceTableLinkToFile,
-        string $DestinationTableLinkToReferenceTable,
-        string $ReferenceTableLinkToDestinationTable,
+        string $referenceTableLinkToFile,
+        string $destinationTableLinkToReferenceTable,
+        string $referenceTableLinkToDestinationTable,
         string $filePath,
         string $fileColumns,
         int    $ignoreLinesQty=0,
@@ -121,7 +121,8 @@ EOF;
         DROP TABLE IF EXISTS `$tempTable`;
 
         CREATE TABLE `$tempTable` AS
-            SELECT d.*, r.`$fileLinkToReferenceTable`
+            SELECT d.*,
+                   r.`$referenceTableLinkToFile` As `$fileLinkToReferenceTable`
             FROM `$destinationTable` d
             NATURAL JOIN `$referenceTable` r
             LIMIT 0;
@@ -134,10 +135,10 @@ EOF;
 
         UPDATE `$tempTable` t
             INNER JOIN `$referenceTable` r
-                ON t.$fileLinkToReferenceTable = r.$ReferenceTableLinkToFile
-            SET t.$DestinationTableLinkToReferenceTable = r.$ReferenceTableLinkToDestinationTable;
+                ON t.$fileLinkToReferenceTable = r.$referenceTableLinkToFile
+            SET t.$destinationTableLinkToReferenceTable = r.$referenceTableLinkToDestinationTable;
 
-        ALTER TABLE `$tempTable` DROP COLUMN `$fileLinkToReferenceTable`;
+        ALTER TABLE `$tempTable` DROP COLUMN `$referenceTableLinkToFile`;
         INSERT INTO `$destinationTable`
             SELECT *
             FROM `$tempTable`;
