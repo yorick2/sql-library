@@ -284,4 +284,33 @@ EOF;
 EOF;
         return $query;
     }
+
+    /**
+     * remove rows where a previous row (by id) has the same value for a given column
+     * @param string $table
+     * @param string $column
+     * @param bool $idAscending
+     * @return string
+     */
+    static function getRemoveLaterDuplicatesSqlText(
+        string $table,
+        string $column,
+        bool $idAscending=true
+    ){
+        if($idAscending){
+            return <<<EOL
+                DELETE FROM $table USING $table,
+                    $table e1
+                WHERE $table.id > e1.id
+                    AND $table.$column = e1.$column;
+EOL;
+        }
+        return <<<EOL
+                DELETE FROM $table USING $table,
+                    $table e1
+                WHERE $table.id > e1.id
+                    AND $table.$column = e1.$column;
+EOL;
+    }
+
 }

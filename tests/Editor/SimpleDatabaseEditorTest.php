@@ -15,14 +15,16 @@ class SimpleDatabaseEditorTest extends TestCase
     protected mysqli $db;
     protected string $file = '/tmp/data/simple.tsv';
     protected string $fileCommaColumn = '/tmp/data/editor-commas.tsv';
-    protected string $fileCommaMultipleColumns = '/tmp/data/editor-comma-multiple-columns.tsv';
     protected string $localFileCommasDesired = '../data/editor-commas-desired.tsv';
+    protected string $fileCommaMultipleColumns = '/tmp/data/editor-comma-multiple-columns.tsv';
     protected string $localFileCommaMultipleColumnsDesired = '../data/editor-comma-multiple-columns-desired.tsv';
     protected string $fileAsPrevious = '/tmp/data/editor-set-column-as-previous.tsv';
     protected string $localFileAsPreviousDesired = '../data/editor-set-column-as-previous-desired.tsv';
     protected string $localFileAsPreviousDescDesired = '../data/editor-set-column-as-previous-desc-desired.tsv';
     protected string $localFileTriggerDesired = '../data/editor-trigger-desired.tsv';
     protected string $localFileTriggerIfElseDesired = '../data/editor-trigger-if-else-desired.tsv';
+    protected string $fileRemoveLaterDuplicates = '/tmp/data/editor-remove-later-duplicates.tsv';
+    protected string $localFileRemoveLaterDuplicatesDesired = '../data/editor-remove-later-duplicates-desired.tsv';
 
     protected function setUp(): void
     {
@@ -274,5 +276,41 @@ EOF;
             );
     }
 
+    public function test_getRemoveLaterDuplicatesSqlText(){
+        $table = 'table1';
+        $duplicateColumn="text1";
+        $this->assertEquals(0, $this->db->query("SELECT * FROM `$table` LIMIT 1")->num_rows);
+        $query = SimpleImporter::getSqlText(
+                $table,
+                $this->fileRemoveLaterDuplicates,
+                '`text1`,`text1b`,`text1c`',
+                1,
+                '\t',
+                ''
+            )
+            .SimpleDatabaseEditor::getRemoveLaterDuplicatesSqlText(
+                $table,
+                $duplicateColumn,
+                true
+            );
+        $this->db->multi_query($query);
+        while ($this->db->next_result()) {
+            ;
+        }
 
+        $this->assertEquals(
+            0,
+            $this->db
+                ->query("SELECT `$duplicateColumn`, COUNT(*) c FROM `$table` GROUP BY `$duplicateColumn` HAVING c > 1;")
+                ->num_rows,
+            'duplicates still exist'
+        );
+        (new DataTestLibrary($this->name()))
+            ->compareTableToCsvData(
+                $table,
+                __DIR__ . '/' . $this->localFileRemoveLaterDuplicatesDesired,
+                [],
+                "\t"
+            );
+    }
 }
