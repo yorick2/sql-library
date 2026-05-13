@@ -286,30 +286,32 @@ EOF;
     }
 
     /**
-     * remove rows where a previous row (by id) has the same value for a given column
+     * remove rows where a previous row (by $orderColumn) has the same value for a given column
      * @param string $table
      * @param string $column
-     * @param bool $idAscending
+     * @param string $orderColumn
+     * @param bool $orderAscending
      * @return string
      */
     static function getRemoveLaterDuplicatesSqlText(
         string $table,
         string $column,
-        bool $idAscending=true
+        string $orderColumn='id',
+        bool $orderAscending=true
     ){
-        if($idAscending){
+        if($orderAscending){
             return <<<EOL
-                DELETE FROM $table USING $table,
-                    $table e1
-                WHERE $table.id > e1.id
-                    AND $table.$column = e1.$column;
+                DELETE FROM `$table` USING `$table`,
+                    `$table` e1
+                WHERE `$table`.`$orderColumn` > e1.`$orderColumn`
+                    AND `$table`.`$column` = e1.`$column`;
 EOL;
         }
         return <<<EOL
-                DELETE FROM $table USING $table,
-                    $table e1
-                WHERE $table.id > e1.id
-                    AND $table.$column = e1.$column;
+                DELETE FROM `$table` USING `$table`,
+                    `$table` e1
+                WHERE `$table`.`$orderColumn` > e1.`$orderColumn`
+                    AND `$table`.`$column` = e1.`$column`;
 EOL;
     }
 

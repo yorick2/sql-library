@@ -291,6 +291,7 @@ EOF;
             .SimpleDatabaseEditor::getRemoveLaterDuplicatesSqlText(
                 $table,
                 $duplicateColumn,
+                'id',
                 true
             );
         $this->db->multi_query($query);
