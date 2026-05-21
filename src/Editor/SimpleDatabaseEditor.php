@@ -146,55 +146,15 @@ EOF;
         int    $maxIterations = 10000
     ): string
     {
-        return <<<EOF
-        DROP TABLE IF EXISTS `$tempTable`;
-
-        CREATE TABLE `$tempTable` AS (
-            SELECT *
-                FROM `$table`
-                WHERE `$tableColumnToSplit` LIKE '%,%'
+        return self::getSplitRecordsWithCharacterSqlText(
+            $table,
+            $tableColumnToSplit,
+            $remainingColumnsInTable,
+            ',',
+            $additionalLoopCommand,
+            $tempTable = 'temp',
+            $maxIterations = 10000
         );
-
-        DROP PROCEDURE IF EXISTS temp_insert_split_by_comma;
-
-        CREATE PROCEDURE temp_insert_split_by_comma()
-        BEGIN
-            DECLARE i INT DEFAULT 0;
-            DECLARE row_count INT DEFAULT 1;
-            WHILE i < $maxIterations AND row_count > 0 DO
-                    # infinite loop safeguard
-                    SET i = i + 1;
-                    # add first word in each row to the word
-                    INSERT INTO `$table` (`$tableColumnToSplit`, $remainingColumnsInTable)
-                        SELECT REGEXP_REPLACE(`$tableColumnToSplit`,'^.*,',''),
-                               $remainingColumnsInTable
-                        FROM `$tempTable`
-                        WHERE `$tableColumnToSplit` LIKE '%,%';
-                    # remove current word
-                    UPDATE `$tempTable`
-                        SET `$tableColumnToSplit` = REGEXP_REPLACE(`$tableColumnToSplit`,',[^,]*$','');
-                    # additional loop commands
-                      $additionalLoopCommand
-                    # count comma entries
-                    SET row_count = (SELECT COUNT(*) FROM `$tempTable` WHERE `$tableColumnToSplit` LIKE '%,%' LIMIT 3);
-            END WHILE;
-        END;
-        
-        CALL temp_insert_split_by_comma();
-        DROP PROCEDURE IF EXISTS temp_insert_split_by_comma;
-
-        # insert the last item in the comma seperated list
-        INSERT INTO `$table` (`$tableColumnToSplit`, $remainingColumnsInTable)
-            SELECT `$tableColumnToSplit`,
-                    $remainingColumnsInTable
-            FROM `$tempTable` as t;
-
-        # remove the original comma listed rows
-        DELETE FROM `$table`
-           WHERE `$tableColumnToSplit` LIKE '%,%';
-
-       DROP TABLE IF EXISTS `$tempTable`;
-EOF;
     }
 
     /**
@@ -221,6 +181,117 @@ EOF;
         int    $maxIterations = 10000
     ): string
     {
+        return self::getSplitRecordsWithMultipleCharacterColumnsSqlText(
+            $table,
+            $tableMultipleColumnsToSplit,
+            $remainingColumnsInTable,
+            ',',
+            $additionalLoopCommand,
+            $tempTable,
+            $maxIterations
+        );
+    }
+
+    /**
+     * @param string $table
+     * @param string $tableColumnToSplit
+     * @param string $remainingColumnsInTable e.g. '`table1_id`,`text2b`'
+     * @param string $character the character to split with
+     * @param string $additionalLoopCommand
+     * @param string $tempTable
+     * @param int $maxIterations
+     * @return string
+     */
+    static function getSplitRecordsWithCharacterSqlText(
+        string $table,
+        string $tableColumnToSplit,
+        string $remainingColumnsInTable,
+        string $character = ',',
+        string $additionalLoopCommand = '',
+        string $tempTable = 'temp',
+        int    $maxIterations = 10000
+    ): string
+    {
+        $query=<<<EOF
+        DROP TABLE IF EXISTS `$tempTable`;
+
+        CREATE TABLE `$tempTable` AS (
+            SELECT *
+                FROM `$table`
+                WHERE `$tableColumnToSplit` LIKE '%$character%'
+        );
+
+        DROP PROCEDURE IF EXISTS temp_insert_split_by_comma;
+
+        CREATE PROCEDURE temp_insert_split_by_comma()
+        BEGIN
+            DECLARE i INT DEFAULT 0;
+            DECLARE row_count INT DEFAULT 1;
+            WHILE i < $maxIterations AND row_count > 0 DO
+                    # infinite loop safeguard
+                    SET i = i + 1;
+                    # add first word in each row to the word
+                    INSERT INTO `$table` (`$tableColumnToSplit`, $remainingColumnsInTable)
+                        SELECT REGEXP_REPLACE(`$tableColumnToSplit`,'^.*$character',''),
+                               $remainingColumnsInTable
+                        FROM `$tempTable`
+                        WHERE `$tableColumnToSplit` LIKE '%$character%';
+                    # remove current word
+EOF;
+            $query .= "# remove current word
+UPDATE `$tempTable`
+SET `$tableColumnToSplit` = REGEXP_REPLACE(`$tableColumnToSplit`,'".$character.'[^'.$character."]*$','');\n";
+        $query .=<<<EOF
+                    # additional loop commands
+                      $additionalLoopCommand
+                    # count comma entries
+                    SET row_count = (SELECT COUNT(*) FROM `$tempTable` WHERE `$tableColumnToSplit` LIKE '%$character%' LIMIT 3);
+            END WHILE;
+        END;
+        
+        CALL temp_insert_split_by_comma();
+        DROP PROCEDURE IF EXISTS temp_insert_split_by_comma;
+
+        # insert the last item in the comma seperated list
+        INSERT INTO `$table` (`$tableColumnToSplit`, $remainingColumnsInTable)
+            SELECT `$tableColumnToSplit`,
+                    $remainingColumnsInTable
+            FROM `$tempTable` as t;
+
+        # remove the original comma listed rows
+        DELETE FROM `$table`
+           WHERE `$tableColumnToSplit` LIKE '%$character%';
+
+       DROP TABLE IF EXISTS `$tempTable`;
+EOF;
+    return $query;
+    }
+
+    /**
+     * all table columns to be split need to have the same number of commas
+     *
+     * |column1|column2|column3|
+     * |-------|-------|-------|
+     * |1,2,3  |5,3,6  |8,7,4 |
+     *
+     * @param string $table
+     * @param array $tableMultipleColumnsToSplit e.g. ['column1','column2','column3',...]
+     * @param string $remainingColumnsInTable e.g. '`table1_id`,`text2b`'
+     * @param string $additionalLoopCommand
+     * @param string $tempTable
+     * @param int $maxIterations
+     * @return string
+     */
+    static function getSplitRecordsWithMultipleCharacterColumnsSqlText(
+        string $table,
+        array $tableMultipleColumnsToSplit,
+        string $remainingColumnsInTable,
+        string $character = ',',
+        string $additionalLoopCommand = '',
+        string $tempTable = 'temp',
+        int    $maxIterations = 10000
+    ): string
+    {
         $tableMultipleColumnsToSplitString = '`'.implode('`,`', $tableMultipleColumnsToSplit).'`';
         $query = <<<EOF
         DROP TABLE IF EXISTS `$tempTable`;
@@ -228,7 +299,7 @@ EOF;
         CREATE TABLE `$tempTable` AS (
             SELECT *
                 FROM `$table`
-                WHERE `$tableMultipleColumnsToSplit[0]` LIKE '%,%'
+                WHERE `$tableMultipleColumnsToSplit[0]` LIKE '%$character%'
         );
 
         DROP PROCEDURE IF EXISTS temp_insert_split_by_comma;
@@ -245,26 +316,26 @@ EOF;
                         SELECT 
 EOF;
         for ($i = 0; $i < count($tableMultipleColumnsToSplit); $i++) {
-            $query .= "REGEXP_REPLACE(`$tableMultipleColumnsToSplit[$i]`,'^.*,',''),\n";
+            $query .= "REGEXP_REPLACE(`$tableMultipleColumnsToSplit[$i]`,'^.*$character',''),\n";
         }
 
         $query .= <<<EOF
                                $remainingColumnsInTable
                         FROM `$tempTable`
-                        WHERE `$tableMultipleColumnsToSplit[0]` LIKE '%,%';
+                        WHERE `$tableMultipleColumnsToSplit[0]` LIKE '%$character%';
                         # remove current word
                         
 EOF;
 
         for ($i = 0; $i < count($tableMultipleColumnsToSplit); $i++) {
-            $query .= "UPDATE `$tempTable` SET `$tableMultipleColumnsToSplit[$i]` = REGEXP_REPLACE(`$tableMultipleColumnsToSplit[$i]`,',[^,]*$','');\n";
+            $query .= "UPDATE `$tempTable` SET `$tableMultipleColumnsToSplit[$i]` = REGEXP_REPLACE(`$tableMultipleColumnsToSplit[$i]`,'".$character.'[^'.$character."]*$','');\n";
         }
 
         $query .= <<<EOF
                     # additional loop commands
                       $additionalLoopCommand
                     # count comma entries
-                    SET row_count = (SELECT COUNT(*) FROM `$tempTable` WHERE `$tableMultipleColumnsToSplit[0]` LIKE '%,%' LIMIT 3);
+                    SET row_count = (SELECT COUNT(*) FROM `$tempTable` WHERE `$tableMultipleColumnsToSplit[0]` LIKE '%$character%' LIMIT 3);
             END WHILE;
         END;
         
@@ -278,7 +349,7 @@ EOF;
             FROM `$tempTable` as t;
         # remove the original comma listed rows
         DELETE FROM `$table`
-           WHERE `$tableMultipleColumnsToSplit[0]` LIKE '%,%';
+           WHERE `$tableMultipleColumnsToSplit[0]` LIKE '%$character%';
 
        DROP TABLE IF EXISTS `$tempTable`;
 EOF;

@@ -7,8 +7,9 @@ use PaulMillband\SqlLibrary\Importer\OneManyImporter;
 use PaulMillband\SqlLibrary\Importer\SimpleImporter;
 use PaulMillband\SqlLibrary\tests\Helper\DatabaseHelper;
 use PaulMillband\SqlLibrary\tests\Helper\DatabaseSqlHelper;
+use PaulMillband\SqlLibrary\tests\Helper\FileHelper;
 use PaulMillband\SqlLibrary\tests\TestLibrary\DataTestLibrary;
-use PHPUnit\Framework\TestCase;
+use PaulMillband\SqlLibrary\tests\TestCase;
 
 class OneManyImporterTest extends TestCase
 {
@@ -24,6 +25,22 @@ class OneManyImporterTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        $localFiles = [
+            __DIR__.'/'.$this->localFile,
+            __DIR__.'/'.$this->localFileNewTableDesired,
+            __DIR__.'/'.$this->localFileNewTableDesiredTest2
+        ];
+        $remoteFiles = [
+            $this->file,
+            $this->fileNewTable1,
+            $this->fileNewTable2,
+            $this->fileNewTable2Test2
+        ];
+        $this->assertFilesExistLocally($localFiles);
+        $this->assertFilesExistOnSqlServer($remoteFiles);
+        (new DatabaseHelper())->dropTables();
+        $this->createTables();
         (new DatabaseHelper())->dropTables();
         $this->createTables();
     }

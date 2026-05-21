@@ -6,7 +6,7 @@ use mysqli;
 use PaulMillband\SqlLibrary\tests\Helper\CsvFileDataHelper;
 use PaulMillband\SqlLibrary\tests\Helper\DatabaseSqlHelper;
 use PaulMillband\SqlLibrary\tests\Helper\DataHelper;
-use PHPUnit\Framework\TestCase;
+use PaulMillband\SqlLibrary\tests\TestCase;
 
 class DataTestLibrary extends TestCase
 {

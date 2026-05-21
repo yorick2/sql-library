@@ -6,8 +6,9 @@ use mysqli;
 use PaulMillband\SqlLibrary\Importer\SimpleImporter;
 use PaulMillband\SqlLibrary\tests\Helper\DatabaseHelper;
 use PaulMillband\SqlLibrary\tests\Helper\DatabaseSqlHelper;
+use PaulMillband\SqlLibrary\tests\Helper\FileHelper;
 use PaulMillband\SqlLibrary\tests\TestLibrary\DataTestLibrary;
-use PHPUnit\Framework\TestCase;
+use PaulMillband\SqlLibrary\tests\TestCase;
 use PaulMillband\SqlLibrary\Importer\ManyManyImporter;
 
 class ManyManyImporterTest extends TestCase
@@ -24,6 +25,19 @@ class ManyManyImporterTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $localFiles = [
+            __DIR__.'/'.$this->localFileSimple,
+            __DIR__.'/'.$this->localFileComplexDesired,
+        ];
+        $remoteFiles = [
+            $this->fileSimple,
+            $this->fileComplex1,
+            $this->fileComplex2,
+            $this->fileComplexPivot,
+            $this->fileComplexDesired
+        ];
+        $this->assertFilesExistLocally($localFiles);
+        $this->assertFilesExistOnSqlServer($remoteFiles);
         (new DatabaseHelper())->dropTables();
         $this->createTables();
     }

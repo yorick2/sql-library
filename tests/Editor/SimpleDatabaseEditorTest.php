@@ -6,8 +6,9 @@ use mysqli;
 use PaulMillband\SqlLibrary\Editor\SimpleDatabaseEditor;
 use PaulMillband\SqlLibrary\tests\Helper\DatabaseHelper;
 use PaulMillband\SqlLibrary\tests\Helper\DatabaseSqlHelper;
+use PaulMillband\SqlLibrary\tests\Helper\FileHelper;
 use PaulMillband\SqlLibrary\tests\TestLibrary\DataTestLibrary;
-use PHPUnit\Framework\TestCase;
+use PaulMillband\SqlLibrary\tests\TestCase;
 use PaulMillband\SqlLibrary\Importer\SimpleImporter;
 
 class SimpleDatabaseEditorTest extends TestCase
@@ -18,6 +19,10 @@ class SimpleDatabaseEditorTest extends TestCase
     protected string $localFileCommasDesired = '../data/editor-commas-desired.tsv';
     protected string $fileCommaMultipleColumns = '/tmp/data/editor-comma-multiple-columns.tsv';
     protected string $localFileCommaMultipleColumnsDesired = '../data/editor-comma-multiple-columns-desired.tsv';
+    protected string $fileCharacterColumn = '/tmp/data/editor-character.tsv';
+    protected string $localFileCharacterDesired = '../data/editor-character-desired.tsv';
+    protected string $fileCharacterMultipleColumns = '/tmp/data/editor-character-multiple-columns.tsv';
+    protected string $localFileCharacterMultipleColumnsDesired = '../data/editor-character-multiple-columns-desired.tsv';
     protected string $fileAsPrevious = '/tmp/data/editor-set-column-as-previous.tsv';
     protected string $localFileAsPreviousDesired = '../data/editor-set-column-as-previous-desired.tsv';
     protected string $localFileAsPreviousDescDesired = '../data/editor-set-column-as-previous-desc-desired.tsv';
@@ -29,6 +34,28 @@ class SimpleDatabaseEditorTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $localFiles = [
+            __DIR__.'/'.$this->localFileCommasDesired,
+            __DIR__.'/'.$this->localFileCommaMultipleColumnsDesired,
+            __DIR__.'/'.$this->localFileCharacterDesired,
+            __DIR__.'/'.$this->localFileCharacterMultipleColumnsDesired,
+            __DIR__.'/'.$this->localFileAsPreviousDesired,
+            __DIR__.'/'.$this->localFileAsPreviousDescDesired,
+            __DIR__.'/'.$this->localFileTriggerDesired,
+            __DIR__.'/'.$this->localFileTriggerIfElseDesired,
+            __DIR__.'/'.$this->localFileRemoveLaterDuplicatesDesired
+        ];
+        $remoteFiles = [
+            $this->file,
+            $this->fileCommaColumn,
+            $this->fileCommaMultipleColumns,
+            $this->fileCharacterColumn,
+            $this->fileCharacterMultipleColumns,
+            $this->fileAsPrevious,
+            $this->fileRemoveLaterDuplicates
+        ];
+        $this->assertFilesExistLocally($localFiles);
+        $this->assertFilesExistOnSqlServer($remoteFiles);
         (new DatabaseHelper())->dropTables();
         $this->createTables();
     }
@@ -145,6 +172,101 @@ EOF;
             ->compareTableToCsvData(
                 $table,
                 __DIR__ . '/' . $this->localFileCommaMultipleColumnsDesired,
+                [],
+                "\t"
+            );
+    }
+
+    public function test_getSplitRecordsWithCharacterColumnSqlText(): void
+    {
+        $table = 'table1';
+        $splitCol = 'text1b';
+
+        $this->assertEquals(0, $this->db->query("SELECT * FROM `$table` LIMIT 1")->num_rows);
+        $query = SimpleImporter::getSqlText(
+            $table,
+            $this->fileCharacterColumn,
+            '`text1`,`text1b`,`text1c`',
+        );
+        $this->db->multi_query($query);
+        while ($this->db->next_result()) {
+            ;
+        }
+
+        $query = SimpleDatabaseEditor::getSplitRecordsWithCharacterSqlText(
+            $table,
+            $splitCol,
+            '`text1`,`text1c`',
+            ';',
+            '',
+            'temp',
+            100
+        );
+        $result = $this->db->multi_query($query);
+        // do not remove. multi_query needs this to allow next query to run
+        while ($this->db->next_result()) {
+            ;
+        }
+
+        $result = $this->db
+            ->query('SELECT * FROM `' . $table . '` WHERE `' . $splitCol . '` LIKE "%;%"');
+        $this->assertEquals(0, $result->num_rows, "test has no rows containing a comma in column $splitCol");
+
+        $result = $this->db
+            ->query('SELECT * FROM `' . $table . '`');
+        $this->assertEquals(9, $result->num_rows, "not the right number of rows");
+
+        (new DataTestLibrary($this->name()))
+            ->compareTableToCsvData(
+                $table,
+                __DIR__ . '/' . $this->localFileCharacterDesired,
+                [],
+                "\t"
+            );
+    }
+
+    public function test_getSplitRecordsWithCharacterMultipleColumnsSqlText(): void
+    {
+        $table = 'table1';
+        $splitCols = ['text1b', 'text1c'];
+        $this->assertEquals(0, $this->db->query("SELECT * FROM `$table` LIMIT 1")->num_rows);
+        $query = SimpleImporter::getSqlText(
+            $table,
+            $this->fileCharacterMultipleColumns,
+            '`text1`,`text1b`,`text1c`',
+        );
+        $this->db->multi_query($query);
+        while ($this->db->next_result()) {
+            ;
+        }
+
+        $query = SimpleDatabaseEditor::getSplitRecordsWithMultipleCharacterColumnsSqlText(
+            $table,
+            $splitCols,
+            '`text1`',
+            ';',
+            '',
+            'temp',
+            100
+        );
+        $result = $this->db->multi_query($query);
+        // do not remove. multi_query needs this to allow next query to run
+        while ($this->db->next_result()) {
+            ;
+        }
+
+        $result = $this->db
+            ->query('SELECT * FROM `' . $table . '` WHERE `' . $splitCols[0] . '` LIKE "%;%"');
+        $this->assertEquals(0, $result->num_rows, "test has no rows containing a comma in column $splitCols[0]");
+
+        $result = $this->db
+            ->query('SELECT * FROM `' . $table . '`');
+        $this->assertEquals(6, $result->num_rows, "not the right number of rows");
+
+        (new DataTestLibrary($this->name()))
+            ->compareTableToCsvData(
+                $table,
+                __DIR__ . '/' . $this->localFileCharacterMultipleColumnsDesired,
                 [],
                 "\t"
             );

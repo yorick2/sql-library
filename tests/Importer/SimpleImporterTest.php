@@ -5,8 +5,9 @@ namespace PaulMillband\SqlLibrary\tests\Importer;
 use mysqli;
 use PaulMillband\SqlLibrary\tests\Helper\DatabaseHelper;
 use PaulMillband\SqlLibrary\tests\Helper\DatabaseSqlHelper;
+use PaulMillband\SqlLibrary\tests\Helper\FileHelper;
 use PaulMillband\SqlLibrary\tests\TestLibrary\DataTestLibrary;
-use PHPUnit\Framework\TestCase;
+use PaulMillband\SqlLibrary\tests\TestCase;
 use PaulMillband\SqlLibrary\Importer\SimpleImporter;
 
 class SimpleImporterTest extends TestCase
@@ -18,6 +19,16 @@ class SimpleImporterTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $localFiles = [
+            __DIR__.'/'.$this->localFile
+        ];
+        $remoteFiles = [
+            $this->file
+        ];
+        $this->assertFilesExistLocally($localFiles);
+        $this->assertFilesExistOnSqlServer($remoteFiles);
+        (new DatabaseHelper())->dropTables();
+        $this->createTables();
         (new DatabaseHelper())->dropTables();
         $this->createTables();
     }
