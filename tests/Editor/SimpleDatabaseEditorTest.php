@@ -34,28 +34,6 @@ class SimpleDatabaseEditorTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $localFiles = [
-            __DIR__.'/'.$this->localFileCommasDesired,
-            __DIR__.'/'.$this->localFileCommaMultipleColumnsDesired,
-            __DIR__.'/'.$this->localFileCharacterDesired,
-            __DIR__.'/'.$this->localFileCharacterMultipleColumnsDesired,
-            __DIR__.'/'.$this->localFileAsPreviousDesired,
-            __DIR__.'/'.$this->localFileAsPreviousDescDesired,
-            __DIR__.'/'.$this->localFileTriggerDesired,
-            __DIR__.'/'.$this->localFileTriggerIfElseDesired,
-            __DIR__.'/'.$this->localFileRemoveLaterDuplicatesDesired
-        ];
-        $remoteFiles = [
-            $this->file,
-            $this->fileCommaColumn,
-            $this->fileCommaMultipleColumns,
-            $this->fileCharacterColumn,
-            $this->fileCharacterMultipleColumns,
-            $this->fileAsPrevious,
-            $this->fileRemoveLaterDuplicates
-        ];
-        $this->assertFilesExistLocally($localFiles);
-        $this->assertFilesExistOnSqlServer($remoteFiles);
         (new DatabaseHelper())->dropTables();
         $this->createTables();
     }
@@ -88,7 +66,8 @@ EOF;
     {
         $table = 'table1';
         $splitCol = 'text1b';
-
+        $this->assertFilesExistLocally([__DIR__.'/'.$this->localFileCommasDesired]);
+        $this->assertFilesExistOnSqlServer([$this->fileCommaColumn]);
         $this->assertEquals(0, $this->db->query("SELECT * FROM `$table` LIMIT 1")->num_rows);
         $query = SimpleImporter::getSqlText(
             $table,
@@ -135,6 +114,8 @@ EOF;
     {
         $table = 'table1';
         $splitCols = ['text1b', 'text1c'];
+        $this->assertFilesExistLocally([__DIR__.'/'.$this->localFileCommaMultipleColumnsDesired]);
+        $this->assertFilesExistOnSqlServer([$this->fileCommaMultipleColumns]);
         $this->assertEquals(0, $this->db->query("SELECT * FROM `$table` LIMIT 1")->num_rows);
         $query = SimpleImporter::getSqlText(
             $table,
@@ -181,7 +162,8 @@ EOF;
     {
         $table = 'table1';
         $splitCol = 'text1b';
-
+        $this->assertFilesExistLocally([__DIR__.'/'.$this->localFileCharacterDesired]);
+        $this->assertFilesExistOnSqlServer([$this->fileCharacterColumn]);
         $this->assertEquals(0, $this->db->query("SELECT * FROM `$table` LIMIT 1")->num_rows);
         $query = SimpleImporter::getSqlText(
             $table,
@@ -229,6 +211,9 @@ EOF;
     {
         $table = 'table1';
         $splitCols = ['text1b', 'text1c'];
+        $this->assertFilesExistLocally([__DIR__.'/'.$this->localFileCharacterMultipleColumnsDesired]);
+        $this->assertFilesExistOnSqlServer([$this->fileCharacterMultipleColumns]);
+
         $this->assertEquals(0, $this->db->query("SELECT * FROM `$table` LIMIT 1")->num_rows);
         $query = SimpleImporter::getSqlText(
             $table,
@@ -275,6 +260,9 @@ EOF;
     public function test_getSetColumnValueAsLastValueWhenNotSetSqlText()
     {
         $table = 'table1';
+
+        $this->assertFilesExistLocally([__DIR__.'/'.$this->localFileAsPreviousDesired]);
+        $this->assertFilesExistOnSqlServer([$this->fileAsPrevious]);
         $this->assertEquals(0, $this->db->query("SELECT * FROM `$table` LIMIT 1")->num_rows);
         $query = SimpleImporter::getSqlText(
             $table,
@@ -310,6 +298,8 @@ EOF;
     public function test_Desc_getSetColumnValueAsLastValueWhenNotSetSqlText()
     {
         $table = 'table1';
+        $this->assertFilesExistLocally([__DIR__.'/'.$this->localFileAsPreviousDescDesired]);
+        $this->assertFilesExistOnSqlServer([$this->fileAsPrevious]);
         $this->assertEquals(0, $this->db->query("SELECT * FROM `$table` LIMIT 1")->num_rows);
         $query = SimpleImporter::getSqlText(
             $table,
@@ -342,65 +332,12 @@ EOF;
             );
     }
 
-    public function test_getTriggerSqlText()
-    {
-        $table = 'table1';
-        $this->assertEquals(0, $this->db->query("SELECT * FROM `$table` LIMIT 1")->num_rows);
-        $query = SimpleDatabaseEditor::getTriggerSqlText(
-                $table,
-                'testTrigger',
-            'SET new.`text1c` = concat(new.`text1c`, "banana");'
-            ).
-            SimpleImporter::getSqlText(
-                $table,
-                $this->file,
-                '`text1`,`text1b`,`text1c`',
-            );
-        $this->db->multi_query($query);
-        while ($this->db->next_result()) {
-            ;
-        }
-        (new DataTestLibrary($this->name()))
-            ->compareTableToCsvData(
-                $table,
-                __DIR__ . '/' . $this->localFileTriggerDesired,
-                [],
-                "\t"
-            );
-    }
-
-    public function test_getTriggerIfElseSqlText()
-    {
-        $table = 'table1';
-        $this->assertEquals(0, $this->db->query("SELECT * FROM `$table` LIMIT 1")->num_rows);
-        $query = SimpleDatabaseEditor::getTriggerIfElseSqlText(
-                $table,
-                'testTrigger',
-                'new.`text1`="test1"',
-                'SET new.`text1c` = "no.1";',
-                'SET new.`text1c` = "other";'
-            ).
-            SimpleImporter::getSqlText(
-                $table,
-                $this->file,
-                '`text1`,`text1b`,`text1c`',
-            );
-        $this->db->multi_query($query);
-        while ($this->db->next_result()) {
-            ;
-        }
-        (new DataTestLibrary($this->name()))
-            ->compareTableToCsvData(
-                $table,
-                __DIR__ . '/' . $this->localFileTriggerIfElseDesired,
-                [],
-                "\t"
-            );
-    }
 
     public function test_getRemoveLaterDuplicatesSqlText(){
         $table = 'table1';
         $duplicateColumn="text1";
+        $this->assertFilesExistLocally([__DIR__.'/'.$this->localFileRemoveLaterDuplicatesDesired]);
+        $this->assertFilesExistOnSqlServer([$this->fileRemoveLaterDuplicates]);
         $this->assertEquals(0, $this->db->query("SELECT * FROM `$table` LIMIT 1")->num_rows);
         $query = SimpleImporter::getSqlText(
                 $table,
@@ -432,6 +369,67 @@ EOF;
             ->compareTableToCsvData(
                 $table,
                 __DIR__ . '/' . $this->localFileRemoveLaterDuplicatesDesired,
+                [],
+                "\t"
+            );
+    }
+
+
+    public function test_getTriggerSqlText()
+    {
+        $table = 'table1';
+        $this->assertFilesExistLocally([__DIR__.'/'.$this->localFileTriggerDesired]);
+        $this->assertFilesExistOnSqlServer([$this->file]);
+        $this->assertEquals(0, $this->db->query("SELECT * FROM `$table` LIMIT 1")->num_rows);
+        $query = SimpleDatabaseEditor::getTriggerSqlText(
+                $table,
+                'testTrigger',
+                'SET new.`text1c` = concat(new.`text1c`, "banana");'
+            ).
+            SimpleImporter::getSqlText(
+                $table,
+                $this->file,
+                '`text1`,`text1b`,`text1c`',
+            );
+        $this->db->multi_query($query);
+        while ($this->db->next_result()) {
+            ;
+        }
+        (new DataTestLibrary($this->name()))
+            ->compareTableToCsvData(
+                $table,
+                __DIR__ . '/' . $this->localFileTriggerDesired,
+                [],
+                "\t"
+            );
+    }
+
+    public function test_getTriggerIfElseSqlText()
+    {
+        $table = 'table1';
+        $this->assertFilesExistLocally([__DIR__.'/'.$this->localFileTriggerIfElseDesired]);
+        $this->assertFilesExistOnSqlServer([$this->file]);
+        $this->assertEquals(0, $this->db->query("SELECT * FROM `$table` LIMIT 1")->num_rows);
+        $query = SimpleDatabaseEditor::getTriggerIfElseSqlText(
+                $table,
+                'testTrigger',
+                'new.`text1`="test1"',
+                'SET new.`text1c` = "no.1";',
+                'SET new.`text1c` = "other";'
+            ).
+            SimpleImporter::getSqlText(
+                $table,
+                $this->file,
+                '`text1`,`text1b`,`text1c`',
+            );
+        $this->db->multi_query($query);
+        while ($this->db->next_result()) {
+            ;
+        }
+        (new DataTestLibrary($this->name()))
+            ->compareTableToCsvData(
+                $table,
+                __DIR__ . '/' . $this->localFileTriggerIfElseDesired,
                 [],
                 "\t"
             );

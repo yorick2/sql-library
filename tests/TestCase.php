@@ -27,7 +27,7 @@ class TestCase extends PHPUnitTestCase
                 while ($row = $result -> fetch_row()) {
                     $this->assertTrue(
                         false,
-                        'file "'.$row[0].'" not found. please ensure this file is in place and readable. Read README.md file for more instructions'
+                        "file not found: '$row[0]'.\nplease ensure this file is in place and readable. Read README.md file for more instructions\n\n"
                     );
                 }
                 $result -> free_result();
@@ -44,7 +44,7 @@ class TestCase extends PHPUnitTestCase
         for ($i = 0; $i < count($localFiles); $i++) {
             $this->assertTrue(
                 file_exists($localFiles[$i]),
-                'file "'.$localFiles[$i].'" not found. please ensure this file is in place and readable'
+                "file not found: '$localFiles[$i]'.\nPlease ensure this file is in place and readable\n\n"
             );
         }
     }

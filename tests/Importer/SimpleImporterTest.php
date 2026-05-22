@@ -19,14 +19,6 @@ class SimpleImporterTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $localFiles = [
-            __DIR__.'/'.$this->localFile
-        ];
-        $remoteFiles = [
-            $this->file
-        ];
-        $this->assertFilesExistLocally($localFiles);
-        $this->assertFilesExistOnSqlServer($remoteFiles);
         (new DatabaseHelper())->dropTables();
         $this->createTables();
         (new DatabaseHelper())->dropTables();
@@ -60,6 +52,8 @@ EOF;
 
     public function test_getSimpleImportSqlText_works(): void
     {
+        $this->assertFilesExistLocally([__DIR__.'/'.$this->localFile]);
+        $this->assertFilesExistOnSqlServer([$this->file]);
         $this->assertEquals(0, $this->db->query('SELECT * FROM `table1` LIMIT 1')->num_rows);
         $query = SimpleImporter::getSqlText(
             'table1',

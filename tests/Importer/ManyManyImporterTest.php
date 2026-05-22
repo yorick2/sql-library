@@ -25,19 +25,6 @@ class ManyManyImporterTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $localFiles = [
-            __DIR__.'/'.$this->localFileSimple,
-            __DIR__.'/'.$this->localFileComplexDesired,
-        ];
-        $remoteFiles = [
-            $this->fileSimple,
-            $this->fileComplex1,
-            $this->fileComplex2,
-            $this->fileComplexPivot,
-            $this->fileComplexDesired
-        ];
-        $this->assertFilesExistLocally($localFiles);
-        $this->assertFilesExistOnSqlServer($remoteFiles);
         (new DatabaseHelper())->dropTables();
         $this->createTables();
     }
@@ -81,6 +68,8 @@ EOF;
      */
     public function test_getSimpleManyManySqlText_works(): void
     {
+        $this->assertFilesExistLocally([__DIR__.'/'.$this->localFileSimple]);
+        $this->assertFilesExistOnSqlServer([$this->fileSimple]);
         $this->assertEquals(0, $this->db->query('SELECT * FROM `link` LIMIT 1')->num_rows);
         $this->assertEquals(0, $this->db->query('SELECT * FROM `table1` LIMIT 1')->num_rows);
         $this->assertEquals(0, $this->db->query('SELECT * FROM `table2` LIMIT 1')->num_rows);
@@ -142,6 +131,12 @@ EOF;
 
     public function test_getPivotTableImportSqlText_works(): void
     {
+        $this->assertFilesExistLocally([__DIR__.'/'.$this->localFileComplexDesired]);
+        $this->assertFilesExistOnSqlServer([
+            $this->fileComplex1,
+            $this->fileComplex2,
+            $this->fileComplexPivot
+        ]);
         $this->assertEquals(0, $this->db->query('SELECT * FROM `link` LIMIT 1')->num_rows);
         $this->assertEquals(0, $this->db->query('SELECT * FROM `table1` LIMIT 1')->num_rows);
         $this->assertEquals(0, $this->db->query('SELECT * FROM `table2` LIMIT 1')->num_rows);

@@ -25,20 +25,6 @@ class OneManyImporterTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        $localFiles = [
-            __DIR__.'/'.$this->localFile,
-            __DIR__.'/'.$this->localFileNewTableDesired,
-            __DIR__.'/'.$this->localFileNewTableDesiredTest2
-        ];
-        $remoteFiles = [
-            $this->file,
-            $this->fileNewTable1,
-            $this->fileNewTable2,
-            $this->fileNewTable2Test2
-        ];
-        $this->assertFilesExistLocally($localFiles);
-        $this->assertFilesExistOnSqlServer($remoteFiles);
         (new DatabaseHelper())->dropTables();
         $this->createTables();
         (new DatabaseHelper())->dropTables();
@@ -84,6 +70,8 @@ EOF;
 
     public function test_getSimpleOneManySqlText_works(): void
     {
+        $this->assertFilesExistLocally([__DIR__.'/'.$this->localFile]);
+        $this->assertFilesExistOnSqlServer([$this->file]);
         $this->assertEquals(0, $this->db->query('SELECT * FROM `table1` LIMIT 1')->num_rows);
         $this->assertEquals(0, $this->db->query('SELECT * FROM `table2` LIMIT 1')->num_rows);
         $query=OneManyImporter::getSqlText(
@@ -119,6 +107,13 @@ EOF;
 
     public function test_getSimpleOneManyAddNewTableSqlText_works(): void
     {
+        $this->assertFilesExistLocally([
+            __DIR__.'/'.$this->localFileNewTableDesired
+        ]);
+        $this->assertFilesExistOnSqlServer([
+            $this->fileNewTable1,
+            $this->fileNewTable2
+            ]);
         $this->assertEquals(0, $this->db->query('SELECT * FROM `table1` LIMIT 1')->num_rows);
         $this->assertEquals(0, $this->db->query('SELECT * FROM `table2` LIMIT 1')->num_rows);
         $query=SimpleImporter::getSqlText(
@@ -160,6 +155,11 @@ EOF;
 
     public function test_getSimpleOneManyAddNewTableSqlText_works_test2(): void
     {
+        $this->assertFilesExistLocally([__DIR__.'/'.$this->localFileNewTableDesiredTest2]);
+        $this->assertFilesExistOnSqlServer([
+            $this->fileNewTable1,
+            $this->fileNewTable2Test2
+        ]);
         $this->assertEquals(0, $this->db->query('SELECT * FROM `table1` LIMIT 1')->num_rows);
         $this->assertEquals(0, $this->db->query('SELECT * FROM `table2` LIMIT 1')->num_rows);
         $query=SimpleImporter::getSqlText(
