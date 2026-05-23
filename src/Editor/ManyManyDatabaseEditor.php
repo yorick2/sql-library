@@ -2,10 +2,8 @@
 
 namespace PaulMillband\SqlLibrary\Editor;
 
-class SimpleDatabaseEditor
+class ManyManyDatabaseEditor
 {
-
-
     /**
      * set each rows value for a given column to the value of the column in the previous row
      * @param string $table
@@ -73,63 +71,14 @@ class SimpleDatabaseEditor
 EOF;
     }
 
-    /**
-     * @param string $table
-     * @param string $triggerName
-     * @param string $action finish with a ;
-     * @return string
-     */
-    static function getTriggerSqlText(
-        string $table,
-        string $triggerName,
-        string $action
-    ): string
-    {
-        return <<<EOF
-            DROP TRIGGER IF EXISTS `$triggerName`;
 
-            CREATE TRIGGER `$triggerName`
-            BEFORE INSERT ON `$table`
-            FOR EACH ROW
-            BEGIN
-                $action
-            END;
-            
-EOF;
-    }
 
     /**
      * @param string $table
-     * @param string $triggerName
-     * @param string $IfStatement
-     * @param string $ifAction finish with a ;
-     * @param string $elseAction finish with a ;
-     * @return string
-     */
-    static function getTriggerIfElseSqlText(
-        string $table,
-        string $triggerName,
-        string $IfStatement,
-        string $ifAction,
-        string $elseAction
-    ): string
-    {
-        return <<<EOF
-            CREATE TRIGGER `$triggerName`
-            BEFORE INSERT ON `$table`
-            FOR EACH ROW
-            BEGIN
-                IF $IfStatement THEN
-                    $ifAction
-                ELSE
-                    $elseAction
-                END IF;
-            End;
-EOF;
-    }
-
-    /**
-     * @param string $table
+     * @param string $linkCol
+     * @param string $linkTable
+     * @param string $linkTableLinkCol
+     * @param string $remainingColumnsInLinkTable
      * @param string $tableColumnToSplit
      * @param string $remainingColumnsInTable e.g. '`table1_id`,`text2b`'
      * @param string $additionalLoopCommand
@@ -139,6 +88,10 @@ EOF;
      */
     static function getSplitRecordsWithCommasSqlText(
         string $table,
+        string $linkCol,
+        string $linkTable,
+        string $linkTableLinkCol,
+        string $remainingColumnsInLinkTable,
         string $tableColumnToSplit,
         string $remainingColumnsInTable,
         string $additionalLoopCommand = '',
@@ -148,6 +101,10 @@ EOF;
     {
         return self::getSplitRecordsWithCharacterSqlText(
             $table,
+            $linkCol,
+            $linkTable,
+            $linkTableLinkCol,
+            $remainingColumnsInLinkTable,
             $tableColumnToSplit,
             $remainingColumnsInTable,
             ',',
@@ -155,6 +112,97 @@ EOF;
             $tempTable = 'temp',
             $maxIterations = 10000
         );
+    }
+
+    /**
+     * @param string $table
+     * @param string $linkCol
+     * @param string $linkTable
+     * @param string $linkTableLinkCol
+     * @param string $remainingColumnsInLinkTable
+     * @param string $tableColumnToSplit
+     * @param string $remainingColumnsInTable e.g. '`table1_id`,`text2b`'
+     * @param string $character the character to split with
+     * @param string $additionalLoopCommand
+     * @param string $tempTable
+     * @param int $maxIterations
+     * @return string
+     */
+    static function getSplitRecordsWithCharacterSqlText(
+        string $table,
+        string $linkCol,
+        string $linkTable,
+        string $linkTableLinkCol,
+        string $remainingColumnsInLinkTable,
+        string $tableColumnToSplit,
+        string $remainingColumnsInTable,
+        string $character = ',',
+        string $additionalLoopCommand = '',
+        string $tempTable = 'temp',
+        int    $maxIterations = 10000
+    ): string
+    {
+        $query=<<<EOF
+        ALTER TABLE `$table` ADD COLUMN `old_id` int;
+
+        DROP TABLE IF EXISTS `$tempTable`;
+        DROP TRIGGER IF EXISTS `updatePivotTable`;
+
+        CREATE TABLE `$tempTable` AS (
+            SELECT *
+                FROM `$table`
+                WHERE `$tableColumnToSplit` LIKE '%$character%'
+        );
+
+        CREATE TRIGGER `updatePivotTable`
+        AFTER INSERT ON `$table`
+        FOR EACH ROW
+        BEGIN
+              INSERT INTO `$linkTable` (`$linkTableLinkCol`, $remainingColumnsInLinkTable)
+                    SELECT new.$linkCol, $remainingColumnsInLinkTable
+                    FROM `$linkTable`
+                    WHERE `$linkTableLinkCol`=new.old_id;
+        End;
+
+        DROP PROCEDURE IF EXISTS temp_insert_split_by_comma;
+
+        CREATE PROCEDURE temp_insert_split_by_comma()
+        BEGIN
+            DECLARE i INT DEFAULT 0;
+            DECLARE row_count INT DEFAULT 1;
+            WHILE i < $maxIterations AND row_count > 0 DO
+                    -- infinite loop safeguard
+                    SET i = i + 1;
+                    -- add first word in each row to the word
+                    INSERT INTO `$table` (`$tableColumnToSplit`, $remainingColumnsInTable,`old_id`)
+                        SELECT REGEXP_REPLACE(`$tableColumnToSplit`,'^.*$character',''), $remainingColumnsInTable, `id`
+                        FROM `$tempTable`
+                        WHERE `$tableColumnToSplit` LIKE '%$character%';
+
+                    -- remove current word
+                    UPDATE `$tempTable`
+                    SET `$tableColumnToSplit` = REGEXP_REPLACE(`$tableColumnToSplit`,'${character}[^$character]*$','');
+
+                    -- additional loop commands
+                      $additionalLoopCommand
+                    -- count comma entries
+                    SET row_count = (SELECT COUNT(*) FROM `$tempTable` WHERE `$tableColumnToSplit` LIKE '%$character%' LIMIT 3);
+            END WHILE;
+        END;
+        
+        CALL temp_insert_split_by_comma();
+        DROP PROCEDURE IF EXISTS temp_insert_split_by_comma;
+
+        -- update original column to remaining value 
+
+        UPDATE `$table`
+            SET `$tableColumnToSplit` = REGEXP_REPLACE(`$tableColumnToSplit`,'^.*${character}','');
+           
+--        ALTER TABLE `$table` DROP COLUMN `old_id`;
+--        DROP TABLE IF EXISTS `$tempTable`;
+        DROP TRIGGER IF EXISTS `updatePivotTable`;
+EOF;
+    return $query;
     }
 
     /**
@@ -176,6 +224,7 @@ EOF;
         string $table,
         array $tableMultipleColumnsToSplit,
         string $remainingColumnsInTable,
+        string $linkTable,
         string $additionalLoopCommand = '',
         string $tempTable = 'temp',
         int    $maxIterations = 10000
@@ -185,86 +234,12 @@ EOF;
             $table,
             $tableMultipleColumnsToSplit,
             $remainingColumnsInTable,
+            $linkTable,
             ',',
             $additionalLoopCommand,
             $tempTable,
             $maxIterations
         );
-    }
-
-    /**
-     * @param string $table
-     * @param string $tableColumnToSplit
-     * @param string $remainingColumnsInTable e.g. '`table1_id`,`text2b`'
-     * @param string $character the character to split with
-     * @param string $additionalLoopCommand
-     * @param string $tempTable
-     * @param int $maxIterations
-     * @return string
-     */
-    static function getSplitRecordsWithCharacterSqlText(
-        string $table,
-        string $tableColumnToSplit,
-        string $remainingColumnsInTable,
-        string $character = ',',
-        string $additionalLoopCommand = '',
-        string $tempTable = 'temp',
-        int    $maxIterations = 10000
-    ): string
-    {
-        $query=<<<EOF
-        DROP TABLE IF EXISTS `$tempTable`;
-
-        CREATE TABLE `$tempTable` AS (
-            SELECT *
-                FROM `$table`
-                WHERE `$tableColumnToSplit` LIKE '%$character%'
-        );
-
-        DROP PROCEDURE IF EXISTS temp_insert_split_by_comma;
-
-        CREATE PROCEDURE temp_insert_split_by_comma()
-        BEGIN
-            DECLARE i INT DEFAULT 0;
-            DECLARE row_count INT DEFAULT 1;
-            WHILE i < $maxIterations AND row_count > 0 DO
-                    # infinite loop safeguard
-                    SET i = i + 1;
-                    # add first word in each row to the word
-                    INSERT INTO `$table` (`$tableColumnToSplit`, $remainingColumnsInTable)
-                        SELECT REGEXP_REPLACE(`$tableColumnToSplit`,'^.*$character',''),
-                               $remainingColumnsInTable
-                        FROM `$tempTable`
-                        WHERE `$tableColumnToSplit` LIKE '%$character%';
-                    # remove current word
-EOF;
-            $query .= "# remove current word
-UPDATE `$tempTable`
-SET `$tableColumnToSplit` = REGEXP_REPLACE(`$tableColumnToSplit`,'${character}[^$character]*$','');\n";
-        $query .=<<<EOF
-                    # additional loop commands
-                      $additionalLoopCommand
-                    # count comma entries
-                    SET row_count = (SELECT COUNT(*) FROM `$tempTable` WHERE `$tableColumnToSplit` LIKE '%$character%' LIMIT 3);
-            END WHILE;
-        END;
-        
-        CALL temp_insert_split_by_comma();
-        DROP PROCEDURE IF EXISTS temp_insert_split_by_comma;
-
-        # insert the last item in the comma seperated list
-        INSERT INTO `$table` (`$tableColumnToSplit`, $remainingColumnsInTable)
-            SELECT `$tableColumnToSplit`,
-                    $remainingColumnsInTable
-            FROM `$tempTable` as t;
-
-        # remove the original comma listed rows
-        DELETE FROM `$table`
-           WHERE `$tableColumnToSplit` LIKE '%$character%';
-
-       DROP TABLE IF EXISTS `$tempTable`;
-EOF;
-    return $query;
     }
 
     /**
@@ -277,6 +252,7 @@ EOF;
      * @param string $table
      * @param array $tableMultipleColumnsToSplit e.g. ['column1','column2','column3',...]
      * @param string $remainingColumnsInTable e.g. '`table1_id`,`text2b`'
+     * @param string $linkTable
      * @param string $additionalLoopCommand
      * @param string $tempTable
      * @param int $maxIterations
@@ -286,6 +262,7 @@ EOF;
         string $table,
         array $tableMultipleColumnsToSplit,
         string $remainingColumnsInTable,
+        string $linkTable,
         string $character = ',',
         string $additionalLoopCommand = '',
         string $tempTable = 'temp',
@@ -359,6 +336,9 @@ EOF;
     /**
      * remove rows where a previous row (by $orderColumn) has the same value for a given column
      * @param string $table
+     * @param string $linkColumn,
+     * @param string $linkTable,
+     * @param string $linkTableLinkColumn,
      * @param string $column
      * @param string $orderColumn
      * @param bool $orderAscending
@@ -366,9 +346,12 @@ EOF;
      */
     static function getRemoveLaterDuplicatesSqlText(
         string $table,
+        string $linkColumn,
+        string $linkTable,
+        string $linkTableLinkColumn,
         string $column,
         string $orderColumn='id',
-        bool $orderAscending=true
+        bool   $orderAscending=true
     ){
         if($orderAscending){
             return <<<EOL

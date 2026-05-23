@@ -6,6 +6,141 @@ class ManyManyImporter
 {
     /**
      * Import a tsv or csv into a many-many database table pair
+     * for more complex imports than flat 1-1
+     *
+     * @param int $startID what id to give the first row
+     * @param string $pivotTable string e.g. 'table1_table2'
+     * @param array $pivotTableColumns e.g. [`table1_id`,`table2_id`]
+     * @param string $table1 e.g. 'table1'
+     * @param string $columnsForTable1 e.g. '`column1`,`column2`'
+     * @param string $valueColumnsForTable1 e.g. 'NEW.`column1`,NEW.`column2`'
+     * @param string $table2 e.g. 'table2'
+     * @param string $columnsForTable2 e.g. '`column3`,`column4`'
+     * @param string $valueColumnsForTable2 e.g. 'id, NEW.`column3`,NEW.`column4`'
+     * @param array $linkColumns ['text1','text2']
+     * @param string $filePath file path e.g. '__DIR__./src/test.tsv'
+     * @param string $fileColumns e.g. 'column1,column2'
+     * @param int    $ignoreLinesQty number of lines to ignore at the start of the file
+     * @param string $fileDelimiter e.g. '\t'
+     * @param string $additionalFileImportCommand e.g. "set simple = REGEXP_REPLACE(Word,'[1234]*','')"
+     * @param string $tempTable e.g. 'temp'
+     * @return string
+     */
+    static function getComplexImportSqlText(
+        string $startID,
+        string $pivotTable,
+        array $pivotTableColumns,
+        array $dataTableNames,
+        array $tableColumnsForDataTables,
+        array $valueColumnsForDataTables,
+        array  $linkColumns,
+        string $filePath,
+        string $fileColumns,
+        int    $ignoreLinesQty=0,
+        string $fileDelimiter='\t',
+        string $additionalFileImportCommand='',
+        string $tempTable='temp'
+    ) : string
+    {
+        if(count($dataTableNames)!=count($tableColumnsForDataTables)){
+            throw new Exception('array lengths must be the same for $pivotTableColumns,$dataTableNames,$tableColumnsForDataTables,$valueColumnsForDataTables,$linkColumns');
+        }
+        if(count($dataTableNames)!=count($valueColumnsForDataTables)){
+            throw new Exception('array lengths must be the same for $pivotTableColumns,$dataTableNames,$tableColumnsForDataTables,$valueColumnsForDataTables,$linkColumns');
+        }
+        if(count($dataTableNames)!=count($linkColumns)){
+            throw new Exception('array lengths must be the same for $pivotTableColumns,$dataTableNames,$tableColumnsForDataTables,$valueColumnsForDataTables,$linkColumns');
+        }
+        $ignoreLinesText='';
+        if ($ignoreLinesQty){
+            $ignoreLinesText="IGNORE $ignoreLinesQty LINES\n";
+        }
+        $query=<<<EOF
+        # clean workspace
+        SET FOREIGN_KEY_CHECKS=0;
+        DROP TABLE IF EXISTS `$tempTable`;
+        DROP TRIGGER IF EXISTS `from_load_data_to_table1`;
+        DROP TRIGGER IF EXISTS `from_load_data_to_table2`;
+        DROP TRIGGER IF EXISTS `from_load_data_to_table3`;
+        
+        CREATE TABLE `$tempTable` AS
+                SELECT *
+                FROM `$dataTableNames[0]`
+                
+EOF;
+        for ($i = 1; $i < count($dataTableNames); $i++) {
+            $query.="NATURAL JOIN `$dataTableNames[$i]`\n";
+        }
+        $query.=<<<EOF
+                LIMIT 0;
+        
+        ALTER TABLE `$tempTable` MODIFY `id` INT PRIMARY KEY AUTO_INCREMENT;
+        ALTER TABLE `$tempTable` AUTO_INCREMENT = $startID;
+
+EOF;
+        for ($i = 0; $i < count($pivotTableColumns); $i++) {
+            $query.=<<<EOF
+
+            Alter TABLE `temp` ADD COLUMN `$pivotTableColumns[$i]` int;
+            
+            CREATE TRIGGER `from_load_data_to_table$i`
+            BEFORE INSERT ON `$tempTable`
+            FOR EACH ROW
+            BEGIN
+                IF (SELECT COUNT(1) FROM `$dataTableNames[$i]` WHERE `$linkColumns[$i]` = new.`$linkColumns[$i]`)=0 THEN
+                    INSERT INTO `$dataTableNames[$i]` ($tableColumnsForDataTables[$i])
+                        VALUES ($valueColumnsForDataTables[$i]);
+                END IF;
+            End;
+            
+EOF;
+        }
+        $query.=<<<EOF
+
+        LOAD DATA INFILE '$filePath'
+        IGNORE INTO TABLE `$tempTable`
+        FIELDS TERMINATED BY '$fileDelimiter'
+        $ignoreLinesText($fileColumns)
+        $additionalFileImportCommand;
+        
+EOF;
+        for ($i = 0; $i < count($dataTableNames); $i++) {
+            $query.=<<<EOF
+            
+            UPDATE
+            `$tempTable` tmp$i
+            JOIN
+                `$dataTableNames[$i]` t$i
+            ON
+                tmp$i.$linkColumns[$i] = t$i.$linkColumns[$i]
+            SET
+                tmp$i.`$pivotTableColumns[$i]` = t$i.`id`;
+
+EOF;
+        }
+        $query .="\nINSERT INTO `$pivotTable` (`$pivotTableColumns[0]`";
+        for ($i = 1; $i < count($dataTableNames); $i++) {
+            $query .= ",`$pivotTableColumns[$i]`";
+        }
+        $query .=")\n           SELECT `$pivotTableColumns[0]`";
+        for ($i = 1; $i < count($dataTableNames); $i++) {
+            $query.=",`$pivotTableColumns[$i]`";
+        }
+        $query.="\n".<<<EOF
+        FROM `$tempTable`;
+        
+        # cleanup
+        SET FOREIGN_KEY_CHECKS=1;
+        DROP TABLE IF EXISTS `$tempTable`;
+        DROP TRIGGER IF EXISTS `from_load_data_to_table1`;
+        DROP TRIGGER IF EXISTS `from_load_data_to_table2`;
+        DROP TRIGGER IF EXISTS `from_load_data_to_table3`;
+EOF;
+        return $query;
+    }
+
+    /**
+     * Import a tsv or csv into a many-many database table pair
      * only for flat single file 1-1 imports
      *
      * @param int $startID what id to give the first row
@@ -25,7 +160,7 @@ class ManyManyImporter
      * @param string $tempTable e.g. 'temp'
      * @return string
      */
-    static function getSqlText(
+    static function getSimpleImportSqlText(
         string $startID,
         string $pivotTable,
         string $pivotTableColumns,
@@ -86,7 +221,7 @@ class ManyManyImporter
 
         # cleanup
         SET FOREIGN_KEY_CHECKS=1;
-#       DROP TABLE IF EXISTS `$tempTable`;
+        DROP TABLE IF EXISTS `$tempTable`;
         DROP TRIGGER IF EXISTS `from_load_data_to_table1`;
         DROP TRIGGER IF EXISTS `from_load_data_to_table2`;
         DROP TRIGGER IF EXISTS `from_load_data_to_table3`;

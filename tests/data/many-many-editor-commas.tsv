@@ -1,0 +1,6 @@
+text1	text1b	text1c	text2	text2b	text3	text3b	text4	text4b
+foo,foo2,foo3	foobar		test1	foobar2	bar	foo2	barbar	barbaz4
+bar	foobar2	foo	test2	foobar2	bar	foo4	barbar2	barbaz2
+baz,baz2	foobar3	foo2	test3	foobar2	bar	foo	barbar	barbaz2
+foobar	foobar4		test4	foobar2	bar	foo	barbar3	barbaz3
+barbar,barbar2	foobar5		test4	foobar	bar	foo3	barbar	barbaz

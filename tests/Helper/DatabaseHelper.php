@@ -20,6 +20,8 @@ class DatabaseHelper
             DROP TABLE IF EXISTS `link`;
             DROP TABLE IF EXISTS `table1`;
             DROP TABLE IF EXISTS `table2`;
+            DROP TABLE IF EXISTS `table3`;
+            DROP TABLE IF EXISTS `table4`;
 EOF;
         $db->multi_query($query);
         // do not remove. multi_query needs this to allow next query to run

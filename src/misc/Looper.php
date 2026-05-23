@@ -25,7 +25,6 @@ class Looper
         CREATE PROCEDURE temp_looper()
         BEGIN
             DECLARE i INT DEFAULT 0;
-            DECLARE row_count INT DEFAULT 1;
             WHILE i < $maxIterations AND $condition DO
                     # infinite loop safeguard
                     SET i = i + 1;
@@ -34,8 +33,6 @@ class Looper
                 END WHILE;
         END$$
         DELIMITER ;
-
-        CALL temp_insert_split_by_comma();
 
         DROP PROCEDURE IF EXISTS temp_looper;
 EOF;

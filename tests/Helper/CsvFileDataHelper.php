@@ -26,9 +26,23 @@ class CsvFileDataHelper
             $header = $data[0];
             array_shift($data);
         }
-        array_walk($data, function (&$a) use ($data, $header) {
+        $headerCount = count($header);
+        array_walk($data, function (&$a) use ($data, $header, $headerCount) {
+            for ($i = 0; $i < ($headerCount-count($a)); $i++) {
+                $a[]='';
+            }
             $a = array_combine($header, $a);
         });
         return $data;
+    }
+
+    /**
+     * @param $fileContents
+     * @param string $separator
+     * @return array
+     */
+    public function getFirstCsvLine($fileContents, string $separator=','): array
+    {
+         array_map(fn($v) => str_getcsv($v, separator: $separator, escape: ''), $fileContents)[0];
     }
 }
