@@ -48,6 +48,10 @@ class ManyManyDatabaseEditorTest extends TestCase
 
     protected function tearDown(): void
     {
+        $result = $this->db
+            ->query("SELECT * FROM $this->table1 LIMIT 1")
+            ->fetch_assoc();
+        $this->assertFalse(key_exists('old_id',$result));
         parent::tearDown();
         (new DatabaseHelper())->dropTables();
     }
@@ -193,6 +197,10 @@ SQL;
                 [],
                 "\t"
             );
+        $result = $this->db
+            ->query("SELECT * FROM $this->table1 LIMIT 1")
+            ->fetch_assoc();
+        $this->assertFalse(key_exists('old_id',$result));
     }
 
     public function test_getSplitRecordsWithCharacterColumnSqlText_table1(): void
@@ -383,6 +391,10 @@ SQL;
                 [],
                 "\t"
             );
+        $result = $this->db
+            ->query("SELECT * FROM $this->table1 LIMIT 1")
+            ->fetch_assoc();
+        $this->assertFalse(key_exists('old_id',$result));
     }
 
     public function test_getRemoveLaterDuplicatesSqlText(){

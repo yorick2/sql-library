@@ -14,7 +14,7 @@ class Files
         string $tmpTable='temp'
     ) : string
     {
-        return <<<SQL
+        $query=<<<SQL
         DROP TABLE IF EXISTS `$tmpTable`;
         CREATE TABLE `$tmpTable`(
             filename varchar(255)
@@ -29,5 +29,6 @@ SQL;
         WHERE LOAD_FILE(filename) IS NULL;
         DROP TABLE IF EXISTS `$tmpTable`;
 SQL;
+        return $query;
     }
 }

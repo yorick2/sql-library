@@ -199,7 +199,7 @@ SQL;
             SET `$tableColumnToSplit` = REGEXP_REPLACE(`$tableColumnToSplit`,'^.*{$character}','');
            
         ALTER TABLE `$table` DROP COLUMN `old_id`;
---        DROP TABLE IF EXISTS `$tempTable`;
+        DROP TABLE IF EXISTS `$tempTable`;
         DROP TRIGGER IF EXISTS `updatePivotTable`;
 SQL;
         return $query;
@@ -314,8 +314,8 @@ SQL;
         }
         $query.=";\n";
         $query .= <<<SQL
---        ALTER TABLE `$table` DROP COLUMN `old_id`;
---        DROP TABLE IF EXISTS `$tempTable`;
+        ALTER TABLE `$table` DROP COLUMN `old_id`;
+        DROP TABLE IF EXISTS `$tempTable`;
         DROP TRIGGER IF EXISTS `updatePivotTable`;
 SQL;
     return $query;

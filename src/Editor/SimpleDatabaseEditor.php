@@ -52,7 +52,7 @@ class SimpleDatabaseEditor
             $where = "$orderingColumn < t.$orderingColumn AND $column != 0";
         }
         return <<<SQL
-        CREATE TEMPORARY TABLE $tempTable AS
+        CREATE TABLE $tempTable AS
         SELECT t.$orderingColumn, (
             SELECT $column
             FROM `$table`
@@ -69,7 +69,7 @@ class SimpleDatabaseEditor
         JOIN $tempTable temp ON t.$orderingColumn = temp.$orderingColumn
         SET t.$column = temp.$newColumn;
 
-        DROP TEMPORARY TABLE $tempTable;
+        DROP TABLE $tempTable;
 SQL;
     }
 

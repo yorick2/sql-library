@@ -8,6 +8,17 @@ use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 
 class TestCase extends PHPUnitTestCase
 {
+    protected function tearDown(): void
+    {
+        $result = $this->db
+            ->query("Show tables")
+            ->fetch_all( MYSQLI_ASSOC);
+        foreach ($result as $row) {
+            $this->assertNotEquals('temp', $row['Tables_in_test']);
+        }
+        parent::tearDown();
+    }
+
     /**
      * @param array $remoteFiles
      * @return void
