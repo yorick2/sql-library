@@ -43,7 +43,7 @@ class ManyManyImporterTest extends TestCase
     protected function createTables(): void
     {
         $this->db = DatabaseSqlHelper::getInstance()->getConnection();
-        $query=<<<EOF
+        $query=<<<SQL
             CREATE TABLE `link` (
                 `table1_id` int NOT NULL,
                 `table2_id` int
@@ -61,7 +61,7 @@ class ManyManyImporterTest extends TestCase
                 `text2b` varchar(255),
                 PRIMARY KEY (id)
             )
-EOF;
+SQL;
         $this->db->multi_query($query);
         // do not remove. multi_query needs this to allow next query to run
         do {
@@ -142,7 +142,7 @@ EOF;
     {
         $this->assertFilesExistLocally([__DIR__.'/'.$this->localFileComplex]);
         $this->assertFilesExistOnSqlServer([$this->fileComplex]);
-        $query =<<<EOF
+        $query =<<<SQL
             CREATE TABLE `table3` (
                 `id` int NOT NULL AUTO_INCREMENT,
                 `text3` varchar(255),
@@ -157,7 +157,7 @@ EOF;
             );
             ALTER TABLE `link` ADD COLUMN `table3_id` INT;
             ALTER TABLE `link` ADD COLUMN `table4_id` INT;
-EOF;
+SQL;
         $this->db->multi_query($query);
         // do not remove. multi_query needs this to allow next query to run
         while ($this->db->next_result()){;}
@@ -196,11 +196,13 @@ EOF;
         // do not remove. multi_query needs this to allow next query to run
         while ($this->db->next_result()){;}
 
-        $this->assertNotEquals(0, $this->db->query('SELECT * FROM `link` LIMIT 1')->num_rows);
-        $this->assertNotEquals(0, $this->db->query('SELECT * FROM `table1` LIMIT 1')->num_rows);
-        $this->assertNotEquals(0, $this->db->query('SELECT * FROM `table2` LIMIT 1')->num_rows);
-        $this->assertNotEquals(0, $this->db->query('SELECT * FROM `table3` LIMIT 1')->num_rows);
-        $this->assertNotEquals(0, $this->db->query('SELECT * FROM `table4` LIMIT 1')->num_rows);
+
+        $this->assertEquals(6, $this->db->query('SELECT * FROM `link`')->num_rows);
+        $this->assertEquals(3, $this->db->query('SELECT * FROM `table1`')->num_rows);
+        $this->assertEquals(4, $this->db->query('SELECT * FROM `table2`')->num_rows);
+        $this->assertEquals(3, $this->db->query('SELECT * FROM `table3`')->num_rows);
+        $this->assertEquals(3, $this->db->query('SELECT * FROM `table4`')->num_rows);
+
 
         $query= 'SELECT l.*';
         for ($i = 1; $i <= 4; $i++) {
@@ -208,38 +210,40 @@ EOF;
         }
         $query.="\nFROM\n  `link` l\n";
         for ($i = 1; $i <= 4; $i++) {
-         $query .=<<<EOF
+         $query .=<<<SQL
         INNER JOIN
     `table$i` t$i
 ON
-    l.table${i}_id=t$i.id
-EOF;
+    l.table{$i}_id=t$i.id
+SQL;
         }
-
         (new DataTestLibrary($this->name()))
-            ->compareTableToCsvData(
-                'table1',
-                __DIR__.'/'.$this->localFileComplex,
-                [],
-                "\t"
-            )
-            ->compareTableToCsvData(
-                'table2',
-                __DIR__.'/'.$this->localFileComplex,
-                [],
-                "\t"
-            )
-            ->compareTableToCsvData(
-                'table3',
-                __DIR__.'/'.$this->localFileComplex,
-                [],
-                "\t"
-            )
             ->compareSqlQueryToCsvData(
                 $query,
                 __DIR__.'/'.$this->localFileComplex,
                 [],
                 "\t"
+            )
+            ->compareTableToCsvData(
+                'table1',
+                __DIR__.'/'.$this->localFileComplex,
+                [],
+                "\t",
+                false
+            )
+            ->compareTableToCsvData(
+                'table2',
+                __DIR__.'/'.$this->localFileComplex,
+                [],
+                "\t",
+                false
+            )
+            ->compareTableToCsvData(
+                'table3',
+                __DIR__.'/'.$this->localFileComplex,
+                [],
+                "\t",
+                false
             );
     }
 
@@ -312,7 +316,7 @@ EOF;
         $this->assertEquals(0, $this->db->query('SELECT * FROM `table1` LIMIT 1')->num_rows);
         $this->assertEquals(0, $this->db->query('SELECT * FROM `table2` LIMIT 1')->num_rows);
 
-        $query =<<<EOF
+        $query =<<<SQL
             CREATE TABLE `table3` (
                 `id` int NOT NULL AUTO_INCREMENT,
                 `text3` varchar(255),
@@ -329,7 +333,7 @@ EOF;
             ALTER TABLE `table2` ADD COLUMN `myRef2` INT;
             ALTER TABLE `link` ADD COLUMN `table3_id` INT;
             ALTER TABLE `link` ADD COLUMN `table4_id` INT;
-EOF
+SQL
             .SimpleImporter::getSqlText(
                 'table1',
                 $this->fileComplex1,

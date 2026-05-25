@@ -28,12 +28,12 @@ class SimpleImporter
         if ($ignoreLinesQty) {
             $ignoreLinesText = "IGNORE $ignoreLinesQty LINES\n";
         }
-        return <<<EOF
+        return <<<SQL
             LOAD DATA INFILE '$filePath'
             IGNORE INTO TABLE `$table`
             FIELDS TERMINATED BY '$fileDelimiter'
             $ignoreLinesText($fileColumns)
             $additionalFileImportCommand;
-EOF;
+SQL;
     }
 }

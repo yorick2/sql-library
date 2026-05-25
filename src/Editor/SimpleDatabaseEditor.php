@@ -51,7 +51,7 @@ class SimpleDatabaseEditor
             $ascText = "DESC";
             $where = "$orderingColumn < t.$orderingColumn AND $column != 0";
         }
-        return <<<EOF
+        return <<<SQL
         CREATE TEMPORARY TABLE $tempTable AS
         SELECT t.$orderingColumn, (
             SELECT $column
@@ -70,7 +70,7 @@ class SimpleDatabaseEditor
         SET t.$column = temp.$newColumn;
 
         DROP TEMPORARY TABLE $tempTable;
-EOF;
+SQL;
     }
 
     /**
@@ -85,7 +85,7 @@ EOF;
         string $action
     ): string
     {
-        return <<<EOF
+        return <<<SQL
             DROP TRIGGER IF EXISTS `$triggerName`;
 
             CREATE TRIGGER `$triggerName`
@@ -95,7 +95,7 @@ EOF;
                 $action
             END;
             
-EOF;
+SQL;
     }
 
     /**
@@ -114,7 +114,7 @@ EOF;
         string $elseAction
     ): string
     {
-        return <<<EOF
+        return <<<SQL
             CREATE TRIGGER `$triggerName`
             BEFORE INSERT ON `$table`
             FOR EACH ROW
@@ -125,7 +125,7 @@ EOF;
                     $elseAction
                 END IF;
             End;
-EOF;
+SQL;
     }
 
     /**
@@ -212,7 +212,7 @@ EOF;
         int    $maxIterations = 10000
     ): string
     {
-        $query=<<<EOF
+        $query=<<<SQL
         DROP TABLE IF EXISTS `$tempTable`;
 
         CREATE TABLE `$tempTable` AS (
@@ -237,11 +237,11 @@ EOF;
                         FROM `$tempTable`
                         WHERE `$tableColumnToSplit` LIKE '%$character%';
                     # remove current word
-EOF;
+SQL;
             $query .= "# remove current word
 UPDATE `$tempTable`
-SET `$tableColumnToSplit` = REGEXP_REPLACE(`$tableColumnToSplit`,'${character}[^$character]*$','');\n";
-        $query .=<<<EOF
+SET `$tableColumnToSplit` = REGEXP_REPLACE(`$tableColumnToSplit`,'{$character}[^$character]*$','');\n";
+        $query .=<<<SQL
                     # additional loop commands
                       $additionalLoopCommand
                     # count comma entries
@@ -263,7 +263,7 @@ SET `$tableColumnToSplit` = REGEXP_REPLACE(`$tableColumnToSplit`,'${character}[^
            WHERE `$tableColumnToSplit` LIKE '%$character%';
 
        DROP TABLE IF EXISTS `$tempTable`;
-EOF;
+SQL;
     return $query;
     }
 
@@ -293,7 +293,7 @@ EOF;
     ): string
     {
         $tableMultipleColumnsToSplitString = '`'.implode('`,`', $tableMultipleColumnsToSplit).'`';
-        $query = <<<EOF
+        $query = <<<SQL
         DROP TABLE IF EXISTS `$tempTable`;
 
         CREATE TABLE `$tempTable` AS (
@@ -314,24 +314,24 @@ EOF;
                     # add first word in each row to the word
                         INSERT INTO `$table` ($tableMultipleColumnsToSplitString, $remainingColumnsInTable)
                         SELECT 
-EOF;
+SQL;
         for ($i = 0; $i < count($tableMultipleColumnsToSplit); $i++) {
             $query .= "REGEXP_REPLACE(`$tableMultipleColumnsToSplit[$i]`,'^.*$character',''),\n";
         }
 
-        $query .= <<<EOF
+        $query .= <<<SQL
                                $remainingColumnsInTable
                         FROM `$tempTable`
                         WHERE `$tableMultipleColumnsToSplit[0]` LIKE '%$character%';
                         # remove current word
                         
-EOF;
+SQL;
 
         for ($i = 0; $i < count($tableMultipleColumnsToSplit); $i++) {
             $query .= "UPDATE `$tempTable` SET `$tableMultipleColumnsToSplit[$i]` = REGEXP_REPLACE(`$tableMultipleColumnsToSplit[$i]`,'".$character.'[^'.$character."]*$','');\n";
         }
 
-        $query .= <<<EOF
+        $query .= <<<SQL
                     # additional loop commands
                       $additionalLoopCommand
                     # count comma entries
@@ -352,7 +352,7 @@ EOF;
            WHERE `$tableMultipleColumnsToSplit[0]` LIKE '%$character%';
 
        DROP TABLE IF EXISTS `$tempTable`;
-EOF;
+SQL;
         return $query;
     }
 

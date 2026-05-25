@@ -23,7 +23,7 @@ class ManyManyTableReducer
         string $linkColumn2
     )
     {
-        return <<<EOF
+        return <<<SQL
         DELETE FROM
                `$table1` AS p
             JOIN
@@ -39,6 +39,6 @@ class ManyManyTableReducer
         DELETE FROM `$table2`
             WHERE `id` NOT IN
                 (SELECT `$linkColumn2` FROM `$pivotTable`);
-EOF;
+SQL;
     }
 }

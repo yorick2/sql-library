@@ -11,11 +11,11 @@ class misc
      */
     public static function getTableColumnsSqlText(string $table) :string
     {
-        return <<<EOF
+        return <<<SQL
     SELECT `COLUMN_NAME`
     FROM INFORMATION_SCHEMA.COLUMNS
     WHERE TABLE_NAME = N'$table'
-EOF;
+SQL;
     }
 
     /**
@@ -27,12 +27,12 @@ EOF;
     public static function getTableColumnNamesStringExcluding(string $table, array $columnsToIgnore, string $separator=',') :string
     {
         $columnsToIgnoreString = '`'.implode('`,`', $columnsToIgnore).'`';
-        $query=<<<EOF
+        $query=<<<SQL
     SELECT GROUP_CONCAT(COLUMN_NAME SEPARATOR '$separator') as "columns excluding $columnsToIgnoreString"
     FROM INFORMATION_SCHEMA.COLUMNS
     WHERE
         TABLE_NAME = N'$table'
-EOF;
+SQL;
         for ($i = 0; $i < count($columnsToIgnore); $i++) {
             $query.= "\n    AND COLUMN_NAME != '$columnsToIgnore[0]'";
         }

@@ -47,7 +47,7 @@ class SimpleDatabaseEditorTest extends TestCase
     protected function createTables(): void
     {
         $this->db = DatabaseSqlHelper::getInstance()->getConnection();
-        $query = <<<EOF
+        $query = <<<SQL
             CREATE TABLE `table1` (
                 `id` int NOT NULL AUTO_INCREMENT,
                 `text1` varchar(255),
@@ -55,7 +55,7 @@ class SimpleDatabaseEditorTest extends TestCase
                 `text1c` varchar(255),
                 PRIMARY KEY (id)
             );
-EOF;
+SQL;
         $this->db->multi_query($query);
         // do not remove. multi_query needs this to allow next query to run
         do {

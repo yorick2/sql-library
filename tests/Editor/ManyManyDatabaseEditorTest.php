@@ -21,15 +21,12 @@ class ManyManyDatabaseEditorTest extends TestCase
     protected string $fileCommaColumn = '/tmp/data/many-many-editor-commas.tsv';
     protected string $localFileCommasDesired = '../data/many-many-editor-commas-desired.tsv';
     protected string $localFileCommasDesiredLink = '../data/many-many-editor-commas-desired-link.tsv';
-    protected string $fileCommaMultipleColumns = '/tmp/data/many-many-editor-comma-multiple-columns.tsv';
-    protected string $localFileCommaMultipleColumnsDesired = '../data/many-many-editor-comma-multiple-columns-desired1.tsv';
-    protected string $localFileCommaMultipleColumnsDesiredLink = '../data/many-many-editor-comma-multiple-columns-desired-link.tsv';
+    protected string $fileSplitMultipleColumns = '/tmp/data/many-many-editor-split-multiple-columns.tsv';
+    protected string $localFileSplitMultipleColumnsDesired = '../data/many-many-editor-split-multiple-columns-desired.tsv';
+    protected string $localFileSplitMultipleColumnsDesiredLink = '../data/many-many-editor-split-multiple-columns-desired-link.tsv';
     protected string $fileCharacterColumn = '/tmp/data/many-many-editor-character.tsv';
     protected string $localFileCharacterDesired = '../data/many-many-editor-character-desired.tsv';
     protected string $localFileCharacterDesiredLink = '../data/many-many-editor-character-desired-link.tsv';
-    protected string $fileCharacterMultipleColumns = '/tmp/data/many-many-editor-character-multiple-columns.tsv';
-    protected string $localFileCharacterMultipleColumnsDesired = '../data/many-many-editor-character-multiple-columns-desired1.tsv';
-    protected string $localFileCharacterMultipleColumnsDesiredLink = '../data/many-many-editor-character-multiple-columns-desired-link.tsv';
     protected string $fileRemoveLaterDuplicates = '/tmp/data/many-many-editor-remove-later-duplicates1.tsv';
     protected string $fileRemoveLaterDuplicates2 = '/tmp/data/many-many-editor-remove-later-duplicates2.tsv';
     protected string $localFileRemoveLaterDuplicatesDesired = '../data/many-many-editor-remove-later-duplicates-desired1.tsv';
@@ -58,7 +55,7 @@ class ManyManyDatabaseEditorTest extends TestCase
     protected function createTables(): void
     {
         $this->db = DatabaseSqlHelper::getInstance()->getConnection();
-        $query=<<<EOF
+        $query=<<<SQL
             CREATE TABLE `link` (
                 `table1_id` int NOT NULL,
                 `table2_id` int,
@@ -90,7 +87,7 @@ class ManyManyDatabaseEditorTest extends TestCase
                 `text4b` varchar(255),
                 PRIMARY KEY (id)
             );
-EOF;
+SQL;
         $this->db->multi_query($query);
         // do not remove. multi_query needs this to allow next query to run
         do {
@@ -103,6 +100,8 @@ EOF;
     }
     public function test_getSplitRecordsWithCommaColumnSqlText_table1(): void
     {
+        $splitCol = 'text1';
+        $linkTableLinkColumn='table1_id';
         $this->assertFilesExistLocally([
             __DIR__.'/'.$this->localFileCommasDesired,
             __DIR__.'/'.$this->localFileCommasDesiredLink
@@ -140,9 +139,6 @@ EOF;
         while ($this->db->next_result()) {
             // needed to run the multi_query
         }
-
-        $splitCol = 'text1';
-        $linkTableLinkColumn='table1_id';
         $query=misc::getTableColumnNamesStringExcluding($this->linkTable, [$linkTableLinkColumn],'`,`');
         $remainingColumnsInLinkTable=[];
         $this->db->multi_query($query);
@@ -199,65 +195,10 @@ EOF;
             );
     }
 
-    public function test_getSplitRecordsWithCommasMultipleColumnsSqlText_table1(): void
-    {
-        $splitCols = ['text1b', 'text1c'];
-        $this->assertFilesExistLocally([__DIR__.'/'.$this->file]);
-        $this->assertFilesExistOnSqlServer([$this->localFileCommaMultipleColumnsDesired]);
-
-        $this->assertEquals(0, $this->db->query("SELECT * FROM `$this->table1` LIMIT 1")->num_rows);
-        $query=ManyManyImporter::getSqlText(
-            100,
-            'link',
-            '`table1_id`,`table2_id`',
-            $this->table1,
-            '`id`,`text1`,`text1b`,`text1c`',
-            'NEW.`id`,NEW.`text1`,new.`text1b`,new.`text1c`',
-            $this->table2,
-            'id,text2',
-            'NEW.`id`,NEW.`text2`',
-            $this->file,
-            '`text2`,`text1`,`text1b`,`text1c`'
-        );
-        $this->db->multi_query($query);
-        while ($this->db->next_result()) {
-            ;
-        }
-
-        $query = ManyManyDatabaseEditor::getSplitRecordsWithMultipleCommaColumnsSqlText(
-            $this->table1,
-            $splitCols,
-            '`text1`',
-            '',
-            'temp',
-            100
-        );
-        $result = $this->db->multi_query($query);
-        // do not remove. multi_query needs this to allow next query to run
-        while ($this->db->next_result()) {
-            ;
-        }
-
-        $result = $this->db
-            ->query('SELECT * FROM `' . $this->table1 . '` WHERE `' . $splitCols[0] . '` LIKE "%,%"');
-        $this->assertEquals(0, $result->num_rows, "test has no rows containing a comma in column $splitCols[0]");
-
-        $result = $this->db
-            ->query('SELECT * FROM `' . $this->table1 . '`');
-        $this->assertEquals(6, $result->num_rows, "not the right number of rows");
-
-        (new DataTestLibrary($this->name()))
-            ->compareTableToCsvData(
-                $this->table1,
-                __DIR__ . '/' . $this->localFileCommaMultipleColumnsDesired,
-                [],
-                "\t"
-            );
-    }
-
     public function test_getSplitRecordsWithCharacterColumnSqlText_table1(): void
     {
-        $this->assertFilesExistOnSqlServer([$this->localFileCharacterDesired]);
+        $splitCharacter=';';
+
         $this->assertFilesExistLocally([
             __DIR__.'/'.$this->localFileCharacterDesired,
             __DIR__.'/'.$this->localFileCharacterDesiredLink
@@ -269,7 +210,6 @@ EOF;
         $this->assertEquals(0, $this->db->query("SELECT * FROM `$this->table3` LIMIT 1")->num_rows);
         $this->assertEquals(0, $this->db->query("SELECT * FROM `$this->table4` LIMIT 1")->num_rows);
 
-        $splitCharacter=';';
         $query=ManyManyImporter::getComplexImportSqlText(
             100,
             $this->linkTable,
@@ -349,63 +289,103 @@ EOF;
             );
     }
 
-    public function test_getSplitRecordsWithCharacterMultipleColumnsSqlText_table1(): void
+    public function test_getSplitMultipleColumnsSqlText(): void
     {
-        $splitCols = ['text1b', 'text1c'];
-        $this->assertFilesExistLocally([__DIR__.'/'.$this->file]);
-        $this->assertFilesExistOnSqlServer([$this->localFileCharacterMultipleColumnsDesired]);
+        $splitCharacterArray=[',',';'];
+
+        $this->assertFilesExistLocally([
+            __DIR__.'/'.$this->localFileSplitMultipleColumnsDesired,
+            __DIR__.'/'.$this->localFileSplitMultipleColumnsDesiredLink
+        ]);
+        $this->assertFilesExistOnSqlServer([$this->fileSplitMultipleColumns]);
+
         $this->assertEquals(0, $this->db->query("SELECT * FROM `$this->table1` LIMIT 1")->num_rows);
-        $query=ManyManyImporter::getSqlText(
+        $this->assertEquals(0, $this->db->query("SELECT * FROM `$this->table2` LIMIT 1")->num_rows);
+        $this->assertEquals(0, $this->db->query("SELECT * FROM `$this->table3` LIMIT 1")->num_rows);
+        $this->assertEquals(0, $this->db->query("SELECT * FROM `$this->table4` LIMIT 1")->num_rows);
+
+        $query=ManyManyImporter::getComplexImportSqlText(
             100,
-            'link',
-            '`table1_id`,`table2_id`',
-            $this->table1,
-            '`id`,`text1`,`text1b`,`text1c`',
-            'NEW.`id`,NEW.`text1`,new.`text1b`,new.`text1c`',
-            $this->table2,
-            'id,text2',
-            'NEW.`id`,NEW.`text2`',
-            $this->file,
-            '`text2`,`text1`,`text1b`,`text1c`'
+            $this->linkTable,
+            ['table1_id','table2_id','table3_id','table4_id'],
+            [$this->table1, $this->table2, $this->table3, $this->table4],
+            [
+                '`id`,`text1`,`text1b`,`text1c`',
+                '`id`,`text2`,`text2b`',
+                '`id`,`text3`,`text3b`',
+                '`id`,`text4`,`text4b`',
+            ],
+            [
+                'NEW.`id`,NEW.`text1`,new.`text1b`,new.`text1c`',
+                'NEW.`id`,NEW.`text2`,new.`text2b`',
+                'NEW.`id`,NEW.`text3`,new.`text3b`',
+                'NEW.`id`,NEW.`text4`,new.`text4b`',
+            ],
+            ['text1','text2','text3','text4'],
+            $this->fileSplitMultipleColumns,
+            '`text1`,`text1b`,`text1c`,`text2`,`text2b`,`text3`,`text3b`,`text4`,`text4b`',
+            1,
         );
         $this->db->multi_query($query);
         while ($this->db->next_result()) {
-            ;
+            // needed to run the multi_query
         }
 
-        $query = ManyManyDatabaseEditor::getSplitRecordsWithMultipleCharacterColumnsSqlText_table1(
+        $splitColsArray = ['text1','text1b'];
+        $linkTableLinkColumn='table1_id';
+        $query=misc::getTableColumnNamesStringExcluding($this->linkTable, [$linkTableLinkColumn],'`,`');
+        $remainingColumnsInLinkTable=[];
+        $this->db->multi_query($query);
+        do {
+            // Store first result set
+            if ($result = $this->db -> store_result()) {
+                while ($row = $result -> fetch_row()) {
+                    $remainingColumnsInLinkTable[] = $row[0];
+                }
+                $result -> free_result();
+            }
+        } while ($this->db->next_result());
+        $query = ManyManyDatabaseEditor::getSplitRecordsWithMultipleColumnsSqlText(
             $this->table1,
-            $splitCols,
-            '`text1`',
-            ';',
+            'id',
+            $this->linkTable,
+            $linkTableLinkColumn,
+            '`'.$remainingColumnsInLinkTable[0].'`',
+            $splitColsArray,
+            '`text1c`',
+            $splitCharacterArray,
             '',
             'temp',
-            100
+            1000
         );
-        $result = $this->db->multi_query($query);
+        $this->db->multi_query($query);
         // do not remove. multi_query needs this to allow next query to run
         while ($this->db->next_result()) {
-            ;
+            // needed to run the multi_query
         }
 
-        $result = $this->db
-            ->query('SELECT * FROM `' . $this->table1 . '` WHERE `' . $splitCols[0] . '` LIKE "%;%"');
-        $this->assertEquals(0, $result->num_rows, "test has no rows containing a comma in column $splitCols[0]");
-
-        $result = $this->db
-            ->query('SELECT * FROM `' . $this->table1 . '`');
-        $this->assertEquals(6, $result->num_rows, "not the right number of rows");
+        for ($i = 0; $i < $this->count($splitColsArray); $i++) {
+            $result = $this->db
+                ->query('SELECT * FROM `' . $this->table1 . '` WHERE `' . $splitColsArray[$i] . '` LIKE "%'.$splitCharacterArray[$i].'%"');
+            $this->assertEquals(0, $result->num_rows, "test has no rows containing a '$splitCharacterArray[$i]' in column `$splitColsArray[$i]`");
+        }
 
         (new DataTestLibrary($this->name()))
             ->compareTableToCsvData(
                 $this->table1,
-                __DIR__ . '/' . $this->localFileCharacterMultipleColumnsDesired,
+                __DIR__ . '/' . $this->localFileSplitMultipleColumnsDesired,
+                [],
+                "\t"
+            )
+            ->compareTableToCsvData(
+                $this->linkTable,
+                __DIR__ . '/' . $this->localFileSplitMultipleColumnsDesiredLink,
                 [],
                 "\t"
             );
     }
 
-    public function test_getRemoveLaterDuplicatesSqlText_table1(){
+    public function test_getRemoveLaterDuplicatesSqlText(){
         $duplicateColumn="text1";
         $this->assertFilesExistLocally([__DIR__.'/'.$this->file]);
         $this->assertFilesExistOnSqlServer([$this->localFileRemoveLaterDuplicatesDesired]);
@@ -421,273 +401,6 @@ EOF;
             'id,text2',
             'NEW.`id`,NEW.`text2`',
             $this->file,
-            '`text2`,`text1`,`text1b`,`text1c`'
-        )
-            .ManyManyDatabaseEditor::getRemoveLaterDuplicatesSqlText(
-                $this->table1,
-                $duplicateColumn,
-                'id',
-                true
-            );
-        $this->db->multi_query($query);
-        while ($this->db->next_result()) {
-            ;
-        }
-
-        $this->assertEquals(
-            0,
-            $this->db
-                ->query("SELECT `$duplicateColumn`, COUNT(*) c FROM `$this->table1` GROUP BY `$duplicateColumn` HAVING c > 1;")
-                ->num_rows,
-            'duplicates still exist'
-        );
-        (new DataTestLibrary($this->name()))
-            ->compareTableToCsvData(
-                $this->table1,
-                __DIR__ . '/' . $this->localFileRemoveLaterDuplicatesDesired,
-                [],
-                "\t"
-            );
-    }
-
-    public function test_getSplitRecordsWithCommaColumnSqlText_table2(): void
-    {
-        $splitCol = 'text1b';
-        $this->assertFilesExistLocally([__DIR__.'/'.$this->file]);
-        $this->assertFilesExistOnSqlServer([$this->localFileCommasDesired]);
-        $this->assertEquals(0, $this->db->query("SELECT * FROM `$this->table1` LIMIT 1")->num_rows);
-        $query=ManyManyImporter::getSqlText(
-            100,
-            'link',
-            '`table1_id`,`table2_id`',
-            $this->table1,
-            '`id`,`text1`,`text1b`,`text1c`',
-            'NEW.`id`,NEW.`text1`,new.`text1b`,new.`text1c`',
-            $this->table2,
-            'id,text2',
-            'NEW.`id`,NEW.`text2`',
-            $this->file,
-            '`text2`,`text1`,`text1b`,`text1c`'
-        );
-        $this->db->multi_query($query);
-        while ($this->db->next_result()) {
-            ;
-        }
-
-        $query = ManyManyDatabaseEditor::getSplitRecordsWithCommasSqlText(
-            $this->table1,
-            $splitCol,
-            '`text1`,`text1c`',
-            '',
-            'temp',
-            100
-        );
-        $result = $this->db->multi_query($query);
-        // do not remove. multi_query needs this to allow next query to run
-        while ($this->db->next_result()) {
-            ;
-        }
-
-        $result = $this->db
-            ->query('SELECT * FROM `' . $this->table1 . '` WHERE `' . $splitCol . '` LIKE "%,%"');
-        $this->assertEquals(0, $result->num_rows, "test has no rows containing a comma in column $splitCol");
-
-        $result = $this->db
-            ->query('SELECT * FROM `' . $this->table1 . '`');
-        $this->assertEquals(9, $result->num_rows, "not the right number of rows");
-
-        (new DataTestLibrary($this->name()))
-            ->compareTableToCsvData(
-                $this->table1,
-                __DIR__ . '/' . $this->localFileCommasDesired,
-                [],
-                "\t"
-            );
-    }
-
-    public function test_getSplitRecordsWithCommasMultipleColumnsSqlText_table2(): void
-    {
-        $splitCols = ['text1b', 'text1c'];
-        $this->assertFilesExistLocally([__DIR__.'/'.$this->fileSimple]);
-        $this->assertFilesExistOnSqlServer([$this->localFileCommaMultipleColumnsDesired]);
-        $this->assertEquals(0, $this->db->query("SELECT * FROM `$this->table1` LIMIT 1")->num_rows);
-        $query=ManyManyImporter::getSqlText(
-            100,
-            'link',
-            '`table1_id`,`table2_id`',
-            $this->table1,
-            '`id`,`text1`,`text1b`,`text1c`',
-            'NEW.`id`,NEW.`text1`,new.`text1b`,new.`text1c`',
-            $this->table2,
-            'id,text2',
-            'NEW.`id`,NEW.`text2`',
-            $this->fileSimple,
-            '`text2`,`text1`,`text1b`,`text1c`'
-        );
-        $this->db->multi_query($query);
-        while ($this->db->next_result()) {
-            ;
-        }
-
-        $query = ManyManyDatabaseEditor::getSplitRecordsWithMultipleCommaColumnsSqlText(
-            $this->table1,
-            $splitCols,
-            '`text1`',
-            '',
-            'temp',
-            100
-        );
-        $result = $this->db->multi_query($query);
-        // do not remove. multi_query needs this to allow next query to run
-        while ($this->db->next_result()) {
-            ;
-        }
-
-        $result = $this->db
-            ->query('SELECT * FROM `' . $this->table1 . '` WHERE `' . $splitCols[0] . '` LIKE "%,%"');
-        $this->assertEquals(0, $result->num_rows, "test has no rows containing a comma in column $splitCols[0]");
-
-        $result = $this->db
-            ->query('SELECT * FROM `' . $this->table1 . '`');
-        $this->assertEquals(6, $result->num_rows, "not the right number of rows");
-
-        (new DataTestLibrary($this->name()))
-            ->compareTableToCsvData(
-                $this->table1,
-                __DIR__ . '/' . $this->localFileCommaMultipleColumnsDesired,
-                [],
-                "\t"
-            );
-    }
-
-    public function test_getSplitRecordsWithCharacterColumnSqlText_table2(): void
-    {
-        $splitCol = 'text1b';
-        $this->assertFilesExistLocally([__DIR__.'/'.$this->file]);
-        $this->assertFilesExistOnSqlServer([$this->localFileCharacterDesired]);
-        $this->assertEquals(0, $this->db->query("SELECT * FROM `$this->table1` LIMIT 1")->num_rows);
-        $query=ManyManyImporter::getSqlText(
-            100,
-            'link',
-            '`table1_id`,`table2_id`',
-            $this->table1,
-            '`id`,`text1`,`text1b`,`text1c`',
-            'NEW.`id`,NEW.`text1`,new.`text1b`,new.`text1c`',
-            $this->table2,
-            'id,text2',
-            'NEW.`id`,NEW.`text2`',
-            $this->fileSimple,
-            '`text2`,`text1`,`text1b`,`text1c`'
-        );
-        $this->db->multi_query($query);
-        while ($this->db->next_result()) {
-            ;
-        }
-
-        $query = ManyManyDatabaseEditor::getSplitRecordsWithCharacterSqlText(
-            $this->table1,
-            $splitCol,
-            '`text1`,`text1c`',
-            ';',
-            '',
-            'temp',
-            100
-        );
-        $result = $this->db->multi_query($query);
-        // do not remove. multi_query needs this to allow next query to run
-        while ($this->db->next_result()) {
-            ;
-        }
-
-        $result = $this->db
-            ->query('SELECT * FROM `' . $this->table1 . '` WHERE `' . $splitCol . '` LIKE "%;%"');
-        $this->assertEquals(0, $result->num_rows, "test has no rows containing a comma in column $splitCol");
-
-        $result = $this->db
-            ->query('SELECT * FROM `' . $this->table1 . '`');
-        $this->assertEquals(9, $result->num_rows, "not the right number of rows");
-
-        (new DataTestLibrary($this->name()))
-            ->compareTableToCsvData(
-                $this->table1,
-                __DIR__ . '/' . $this->localFileCharacterDesired,
-                [],
-                "\t"
-            );
-    }
-
-    public function test_getSplitRecordsWithCharacterMultipleColumnsSqlText_table2(): void
-    {
-        $splitCols = ['text1b', 'text1c'];
-        $this->assertFilesExistLocally([__DIR__.'/'.$this->fileSimple]);
-        $this->assertFilesExistOnSqlServer([$this->localFileCharacterMultipleColumnsDesired]);
-        $this->assertEquals(0, $this->db->query("SELECT * FROM `$this->table1` LIMIT 1")->num_rows);
-        $query=ManyManyImporter::getSqlText(
-            100,
-            'link',
-            '`table1_id`,`table2_id`',
-            $this->table1,
-            '`id`,`text1`,`text1b`,`text1c`',
-            'NEW.`id`,NEW.`text1`,new.`text1b`,new.`text1c`',
-            $this->table2,
-            'id,text2',
-            'NEW.`id`,NEW.`text2`',
-            $this->fileSimple,
-            '`text2`,`text1`,`text1b`,`text1c`'
-        );
-        $this->db->multi_query($query);
-        while ($this->db->next_result()) {
-            ;
-        }
-
-        $query = ManyManyDatabaseEditor::getSplitRecordsWithMultipleCharacterColumnsSqlText_table2(
-            $this->table1,
-            $splitCols,
-            '`text1`',
-            ';',
-            '',
-            'temp',
-            100
-        );
-        $result = $this->db->multi_query($query);
-        // do not remove. multi_query needs this to allow next query to run
-        while ($this->db->next_result()) {
-            ;
-        }
-
-        $result = $this->db
-            ->query('SELECT * FROM `' . $this->table1 . '` WHERE `' . $splitCols[0] . '` LIKE "%;%"');
-        $this->assertEquals(0, $result->num_rows, "test has no rows containing a comma in column $splitCols[0]");
-
-        $result = $this->db
-            ->query('SELECT * FROM `' . $this->table1 . '`');
-        $this->assertEquals(6, $result->num_rows, "not the right number of rows");
-
-        (new DataTestLibrary($this->name()))
-            ->compareTableToCsvData(
-                $this->table1,
-                __DIR__ . '/' . $this->localFileCharacterMultipleColumnsDesired,
-                [],
-                "\t"
-            );
-    }
-
-    public function test_getRemoveLaterDuplicatesSqlText_table2(){
-        $duplicateColumn="text1";
-        $this->assertFilesExistLocally([__DIR__.'/'.$this->fileSimple]);
-        $this->assertFilesExistOnSqlServer([$this->localFileRemoveLaterDuplicatesDesired]);
-        $this->assertEquals(0, $this->db->query("SELECT * FROM `$this->table1` LIMIT 1")->num_rows);
-        $query=ManyManyImporter::getSqlText(
-            100,
-            'link',
-            '`table1_id`,`table2_id`',
-            $this->table1,
-            '`id`,`text1`,`text1b`,`text1c`',
-            'NEW.`id`,NEW.`text1`,new.`text1b`,new.`text1c`',
-            $this->table2,
-            'id,text2',
-            'NEW.`id`,NEW.`text2`',
-            $this->fileSimple,
             '`text2`,`text1`,`text1b`,`text1c`'
         )
             .ManyManyDatabaseEditor::getRemoveLaterDuplicatesSqlText(

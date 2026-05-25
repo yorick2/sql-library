@@ -40,7 +40,7 @@ class OneManyImporterTest extends TestCase
     protected function createTables(): void
     {
         $this->db = DatabaseSqlHelper::getInstance()->getConnection();
-        $query=<<<EOF
+        $query=<<<SQL
             CREATE TABLE `table1` (
                 `id` int NOT NULL AUTO_INCREMENT,
                 `text1` varchar(255) ,
@@ -56,7 +56,7 @@ class OneManyImporterTest extends TestCase
                 `text2c` varchar(255),
                 PRIMARY KEY (id)
             );
-EOF;
+SQL;
         $this->db->multi_query($query);
         // do not remove. multi_query needs this to allow next query to run
         do {
@@ -97,12 +97,12 @@ EOF;
         {
             // dont delete while statement
         }
-        $this->assertNotEquals(0, $this->db->query('SELECT * FROM `table1` LIMIT 1')->num_rows);
-        $this->assertNotEquals(0, $this->db->query('SELECT * FROM `table2` LIMIT 1')->num_rows);
+        $this->assertEquals(3, $this->db->query('SELECT * FROM `table1`')->num_rows);
+        $this->assertEquals(6, $this->db->query('SELECT * FROM `table2`')->num_rows);
 
         (new DataTestLibrary($this->name()))
-            ->compareTableToCsvData('table1', __DIR__.'/'.$this->localFile)
-            ->compareTableToCsvData('table2', __DIR__.'/'.$this->localFile);
+            ->compareTableToCsvData('table1', __DIR__.'/'.$this->localFile,[],',',false)
+            ->compareTableToCsvData('table2', __DIR__.'/'.$this->localFile,[],',',false);
     }
 
     public function test_getSimpleOneManyAddNewTableSqlText_works(): void

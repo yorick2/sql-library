@@ -1,7 +1,7 @@
 text1	text1b	text2	text2b	text3	text3b	text4	text4b
 test1	foo	bar	baz	foobar	barbar	bazbar2	foobaz1
-test1	foo2	bar2	baz2	foobar1	barbar2	bazbar	foobaz1
+test1	foo2	bar2	baz2	foobar	barbar2	bazbar	foobaz1
 test1	foo3	bar	baz3	foobar2	barbar1	bazbar3	foobaz3
-test2		bar4	baz3	foobar3	barbar2	bazbar1	foobaz2
+test2		bar4	baz3	foobar3	barbar2	bazbar	foobaz2
 test2	foo5	bar3	baz5	foobar2	barbar2	bazbar2	foobaz3
-test3		bar2	baz	foobar3	barbar2	bazbar1	foobaz
+test3		bar2	baz	foobar3	barbar2	bazbar	foobaz

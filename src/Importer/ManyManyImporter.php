@@ -55,7 +55,7 @@ class ManyManyImporter
         if ($ignoreLinesQty){
             $ignoreLinesText="IGNORE $ignoreLinesQty LINES\n";
         }
-        $query=<<<EOF
+        $query=<<<SQL
         # clean workspace
         SET FOREIGN_KEY_CHECKS=0;
         DROP TABLE IF EXISTS `$tempTable`;
@@ -67,19 +67,19 @@ class ManyManyImporter
                 SELECT *
                 FROM `$dataTableNames[0]`
                 
-EOF;
+SQL;
         for ($i = 1; $i < count($dataTableNames); $i++) {
             $query.="NATURAL JOIN `$dataTableNames[$i]`\n";
         }
-        $query.=<<<EOF
+        $query.=<<<SQL
                 LIMIT 0;
         
         ALTER TABLE `$tempTable` MODIFY `id` INT PRIMARY KEY AUTO_INCREMENT;
         ALTER TABLE `$tempTable` AUTO_INCREMENT = $startID;
 
-EOF;
+SQL;
         for ($i = 0; $i < count($pivotTableColumns); $i++) {
-            $query.=<<<EOF
+            $query.=<<<SQL
 
             Alter TABLE `temp` ADD COLUMN `$pivotTableColumns[$i]` int;
             
@@ -93,9 +93,9 @@ EOF;
                 END IF;
             End;
             
-EOF;
+SQL;
         }
-        $query.=<<<EOF
+        $query.=<<<SQL
 
         LOAD DATA INFILE '$filePath'
         IGNORE INTO TABLE `$tempTable`
@@ -103,9 +103,9 @@ EOF;
         $ignoreLinesText($fileColumns)
         $additionalFileImportCommand;
         
-EOF;
+SQL;
         for ($i = 0; $i < count($dataTableNames); $i++) {
-            $query.=<<<EOF
+            $query.=<<<SQL
             
             UPDATE
             `$tempTable` tmp$i
@@ -116,7 +116,7 @@ EOF;
             SET
                 tmp$i.`$pivotTableColumns[$i]` = t$i.`id`;
 
-EOF;
+SQL;
         }
         $query .="\nINSERT INTO `$pivotTable` (`$pivotTableColumns[0]`";
         for ($i = 1; $i < count($dataTableNames); $i++) {
@@ -126,7 +126,7 @@ EOF;
         for ($i = 1; $i < count($dataTableNames); $i++) {
             $query.=",`$pivotTableColumns[$i]`";
         }
-        $query.="\n".<<<EOF
+        $query.="\n".<<<SQL
         FROM `$tempTable`;
         
         # cleanup
@@ -135,7 +135,7 @@ EOF;
         DROP TRIGGER IF EXISTS `from_load_data_to_table1`;
         DROP TRIGGER IF EXISTS `from_load_data_to_table2`;
         DROP TRIGGER IF EXISTS `from_load_data_to_table3`;
-EOF;
+SQL;
         return $query;
     }
 
@@ -182,7 +182,7 @@ EOF;
         if ($ignoreLinesQty){
             $ignoreLinesText="IGNORE $ignoreLinesQty LINES\n";
         }
-        return <<<EOF
+        return <<<SQL
         # clean workspace
         SET FOREIGN_KEY_CHECKS=0;
         DROP TABLE IF EXISTS `$tempTable`;
@@ -226,7 +226,7 @@ EOF;
         DROP TRIGGER IF EXISTS `from_load_data_to_table2`;
         DROP TRIGGER IF EXISTS `from_load_data_to_table3`;
 
-EOF;
+SQL;
     }
 
     /**
@@ -258,13 +258,13 @@ EOF;
         if ($ignoreLinesQty){
             $ignoreLinesText="IGNORE $ignoreLinesQty LINES\n";
         }
-        $query = <<<EOF
+        $query = <<<SQL
             LOAD DATA INFILE '$filePath'
             IGNORE
             INTO TABLE `$pivotTable`
             FIELDS TERMINATED BY '$fileDelimiter'
             $ignoreLinesText (
-EOF;
+SQL;
         for($i=0; $i<count($pivotTableColumns); $i++) {
             $query .= '@ref' . $i . ',';
         }

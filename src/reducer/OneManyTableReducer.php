@@ -23,7 +23,7 @@ class OneManyTableReducer
         string $linkColumn2
     )
     {
-        return <<<EOF
+        return <<<SQL
         DELETE FROM
                `$table1` AS p
             JOIN
@@ -36,6 +36,6 @@ class OneManyTableReducer
         DELETE FROM `$table2`
             WHERE `$linkColumn2` NOT IN
                 (SELECT `$linkColumn1` FROM `$table1`);
-EOF;
+SQL;
     }
 }

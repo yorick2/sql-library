@@ -49,7 +49,7 @@ class ManyManyDatabaseEditor
             $ascText = "DESC";
             $where = "$orderingColumn < t.$orderingColumn AND $column != 0";
         }
-        return <<<EOF
+        return <<<SQL
         CREATE TEMPORARY TABLE $tempTable AS
         SELECT t.$orderingColumn, (
             SELECT $column
@@ -68,7 +68,7 @@ class ManyManyDatabaseEditor
         SET t.$column = temp.$newColumn;
 
         DROP TEMPORARY TABLE $tempTable;
-EOF;
+SQL;
     }
 
 
@@ -142,7 +142,7 @@ EOF;
         int    $maxIterations = 10000
     ): string
     {
-        $query=<<<EOF
+        $query=<<<SQL
         ALTER TABLE `$table` ADD COLUMN `old_id` int;
 
         DROP TABLE IF EXISTS `$tempTable`;
@@ -181,7 +181,7 @@ EOF;
 
                     -- remove current word
                     UPDATE `$tempTable`
-                    SET `$tableColumnToSplit` = REGEXP_REPLACE(`$tableColumnToSplit`,'${character}[^$character]*$','');
+                    SET `$tableColumnToSplit` = REGEXP_REPLACE(`$tableColumnToSplit`,'{$character}[^$character]*$','');
 
                     -- additional loop commands
                       $additionalLoopCommand
@@ -196,88 +196,68 @@ EOF;
         -- update original column to remaining value 
 
         UPDATE `$table`
-            SET `$tableColumnToSplit` = REGEXP_REPLACE(`$tableColumnToSplit`,'^.*${character}','');
+            SET `$tableColumnToSplit` = REGEXP_REPLACE(`$tableColumnToSplit`,'^.*{$character}','');
            
---        ALTER TABLE `$table` DROP COLUMN `old_id`;
+        ALTER TABLE `$table` DROP COLUMN `old_id`;
 --        DROP TABLE IF EXISTS `$tempTable`;
         DROP TRIGGER IF EXISTS `updatePivotTable`;
-EOF;
-    return $query;
+SQL;
+        return $query;
     }
 
     /**
-     * all table columns to be split need to have the same number of commas
-     *
-     * |column1|column2|column3|
-     * |-------|-------|-------|
-     * |1,2,3  |5,3,6  |8,7,4 |
-     *
      * @param string $table
-     * @param array $tableMultipleColumnsToSplit e.g. ['column1','column2','column3',...]
-     * @param string $remainingColumnsInTable e.g. '`table1_id`,`text2b`'
-     * @param string $additionalLoopCommand
-     * @param string $tempTable
-     * @param int $maxIterations
-     * @return string
-     */
-    static function getSplitRecordsWithMultipleCommaColumnsSqlText(
-        string $table,
-        array $tableMultipleColumnsToSplit,
-        string $remainingColumnsInTable,
-        string $linkTable,
-        string $additionalLoopCommand = '',
-        string $tempTable = 'temp',
-        int    $maxIterations = 10000
-    ): string
-    {
-        return self::getSplitRecordsWithMultipleCharacterColumnsSqlText(
-            $table,
-            $tableMultipleColumnsToSplit,
-            $remainingColumnsInTable,
-            $linkTable,
-            ',',
-            $additionalLoopCommand,
-            $tempTable,
-            $maxIterations
-        );
-    }
-
-    /**
-     * all table columns to be split need to have the same number of commas
-     *
-     * |column1|column2|column3|
-     * |-------|-------|-------|
-     * |1,2,3  |5,3,6  |8,7,4 |
-     *
-     * @param string $table
-     * @param array $tableMultipleColumnsToSplit e.g. ['column1','column2','column3',...]
-     * @param string $remainingColumnsInTable e.g. '`table1_id`,`text2b`'
+     * @param string $linkCol
      * @param string $linkTable
+     * @param string $linkTableLinkCol
+     * @param string $remainingColumnsInLinkTable
+     * @param array $tableColumnsToSplitArray
+     * @param string $remainingColumnsInTable e.g. '`table1_id`,`text2b`'
+     * @param array $charactersArray the character to split with
      * @param string $additionalLoopCommand
      * @param string $tempTable
      * @param int $maxIterations
      * @return string
+     * @throws \Exception
      */
-    static function getSplitRecordsWithMultipleCharacterColumnsSqlText(
+    static function getSplitRecordsWithMultipleColumnsSqlText(
         string $table,
-        array $tableMultipleColumnsToSplit,
-        string $remainingColumnsInTable,
+        string $linkCol,
         string $linkTable,
-        string $character = ',',
+        string $linkTableLinkCol,
+        string $remainingColumnsInLinkTable,
+        array  $tableColumnsToSplitArray,
+        string $remainingColumnsInTable,
+        array  $charactersArray = [',',','],
         string $additionalLoopCommand = '',
         string $tempTable = 'temp',
         int    $maxIterations = 10000
     ): string
     {
-        $tableMultipleColumnsToSplitString = '`'.implode('`,`', $tableMultipleColumnsToSplit).'`';
-        $query = <<<EOF
+        if(count($tableColumnsToSplitArray) !== count($charactersArray)) {
+            throw new \Exception('$charactersArray & $tableColumnsToSplitArray are different length');
+        }
+        $query=<<<SQL
+        ALTER TABLE `$table` ADD COLUMN `old_id` int;
+
         DROP TABLE IF EXISTS `$tempTable`;
+        DROP TRIGGER IF EXISTS `updatePivotTable`;
 
         CREATE TABLE `$tempTable` AS (
             SELECT *
                 FROM `$table`
-                WHERE `$tableMultipleColumnsToSplit[0]` LIKE '%$character%'
+                WHERE `$tableColumnsToSplitArray[0]` LIKE '%$charactersArray[0]%'
         );
+
+        CREATE TRIGGER `updatePivotTable`
+        AFTER INSERT ON `$table`
+        FOR EACH ROW
+        BEGIN
+              INSERT INTO `$linkTable` (`$linkTableLinkCol`, $remainingColumnsInLinkTable)
+                    SELECT new.$linkCol, $remainingColumnsInLinkTable
+                    FROM `$linkTable`
+                    WHERE `$linkTableLinkCol`=new.old_id;
+        End;
 
         DROP PROCEDURE IF EXISTS temp_insert_split_by_comma;
 
@@ -286,51 +266,59 @@ EOF;
             DECLARE i INT DEFAULT 0;
             DECLARE row_count INT DEFAULT 1;
             WHILE i < $maxIterations AND row_count > 0 DO
-                    # infinite loop safeguard
+                    -- infinite loop safeguard
                     SET i = i + 1;
-                    # add first word in each row to the word
-                        INSERT INTO `$table` ($tableMultipleColumnsToSplitString, $remainingColumnsInTable)
-                        SELECT 
-EOF;
-        for ($i = 0; $i < count($tableMultipleColumnsToSplit); $i++) {
-            $query .= "REGEXP_REPLACE(`$tableMultipleColumnsToSplit[$i]`,'^.*$character',''),\n";
+                    -- add first word in each row to the word
+                    INSERT INTO `$table` (`$tableColumnsToSplitArray[0]`
+SQL;
+        for ($i = 1; $i < count($tableColumnsToSplitArray) ; $i++) {
+            $query.=", `$tableColumnsToSplitArray[$i]`";
         }
-
-        $query .= <<<EOF
-                               $remainingColumnsInTable
+        $query.=<<<SQL
+, $remainingColumnsInTable,`old_id`)
+                            SELECT REGEXP_REPLACE(`$tableColumnsToSplitArray[0]`,'^.*$charactersArray[0]','')
+SQL;
+        for ($i = 1; $i < count($tableColumnsToSplitArray) ; $i++) {
+            $query.=", REGEXP_REPLACE(`$tableColumnsToSplitArray[$i]`,'^.*$charactersArray[$i]','')";
+        }
+    $query.=<<<SQL
+, $remainingColumnsInTable, `id`
                         FROM `$tempTable`
-                        WHERE `$tableMultipleColumnsToSplit[0]` LIKE '%$character%';
-                        # remove current word
-                        
-EOF;
-
-        for ($i = 0; $i < count($tableMultipleColumnsToSplit); $i++) {
-            $query .= "UPDATE `$tempTable` SET `$tableMultipleColumnsToSplit[$i]` = REGEXP_REPLACE(`$tableMultipleColumnsToSplit[$i]`,'".$character.'[^'.$character."]*$','');\n";
+                        WHERE `$tableColumnsToSplitArray[0]` LIKE '%$charactersArray[0]%';
+                    -- remove current word
+                    UPDATE `$tempTable`
+                    SET `$tableColumnsToSplitArray[0]` = REGEXP_REPLACE(`$tableColumnsToSplitArray[0]`,'{$charactersArray[0]}[^$charactersArray[0]]*$','')
+SQL;
+        for ($i = 1; $i < count($tableColumnsToSplitArray) ; $i++) {
+            $query.=", `$tableColumnsToSplitArray[$i]` = REGEXP_REPLACE(`$tableColumnsToSplitArray[$i]`,'{$charactersArray[$i]}[^$charactersArray[$i]]*$','')";
         }
-
-        $query .= <<<EOF
-                    # additional loop commands
+        $query.=";\n";
+        $query.=<<<SQL
+                    -- additional loop commands
                       $additionalLoopCommand
-                    # count comma entries
-                    SET row_count = (SELECT COUNT(*) FROM `$tempTable` WHERE `$tableMultipleColumnsToSplit[0]` LIKE '%$character%' LIMIT 3);
+                    -- count comma entries
+                    SET row_count = (SELECT COUNT(*) FROM `$tempTable` WHERE `$tableColumnsToSplitArray[0]` LIKE '%$charactersArray[0]%' LIMIT 3);
             END WHILE;
         END;
         
         CALL temp_insert_split_by_comma();
         DROP PROCEDURE IF EXISTS temp_insert_split_by_comma;
 
-        # insert the last item in the comma seperated list
-        INSERT INTO `$table` ($tableMultipleColumnsToSplitString, $remainingColumnsInTable)
-            SELECT $tableMultipleColumnsToSplitString,
-                    $remainingColumnsInTable
-            FROM `$tempTable` as t;
-        # remove the original comma listed rows
-        DELETE FROM `$table`
-           WHERE `$tableMultipleColumnsToSplit[0]` LIKE '%$character%';
-
-       DROP TABLE IF EXISTS `$tempTable`;
-EOF;
-        return $query;
+        -- update original column to remaining value 
+        
+        UPDATE `$table`
+            SET `$tableColumnsToSplitArray[0]` = REGEXP_REPLACE(`$tableColumnsToSplitArray[0]`,'^.*{$charactersArray[0]}','')
+SQL;
+        for ($i = 1; $i < count($tableColumnsToSplitArray) ; $i++) {
+            $query.=", `$tableColumnsToSplitArray[$i]` = REGEXP_REPLACE(`$tableColumnsToSplitArray[$i]`,'^.*{$charactersArray[$i]}','')";
+        }
+        $query.=";\n";
+        $query .= <<<SQL
+--        ALTER TABLE `$table` DROP COLUMN `old_id`;
+--        DROP TABLE IF EXISTS `$tempTable`;
+        DROP TRIGGER IF EXISTS `updatePivotTable`;
+SQL;
+    return $query;
     }
 
     /**

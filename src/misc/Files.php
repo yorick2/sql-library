@@ -14,20 +14,20 @@ class Files
         string $tmpTable='temp'
     ) : string
     {
-        return <<<EOF
+        return <<<SQL
         DROP TABLE IF EXISTS `$tmpTable`;
         CREATE TABLE `$tmpTable`(
             filename varchar(255)
         );
-EOF;
+SQL;
         for ($i = 0; $i < count($remoteFiles); $i++) {
             $query .= "\nINSERT INTO `$tmpTable` (filename) VALUES ('" . $remoteFiles[$i] . "');";
         }
-        $query.= <<<EOF
+        $query.= <<<SQL
         SELECT *
         FROM `$tmpTable`
         WHERE LOAD_FILE(filename) IS NULL;
         DROP TABLE IF EXISTS `$tmpTable`;
-EOF;
+SQL;
     }
 }

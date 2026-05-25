@@ -44,7 +44,7 @@ class OneManyImporter
         if($ignoreLinesQty>0){
             $ignoreLinesText="IGNORE $ignoreLinesQty LINES\n";
         }
-        return <<<EOF
+        return <<<SQL
         DROP TABLE IF EXISTS `$tempTable`;
         DROP TRIGGER IF EXISTS `from_load_data_to_table1`;
         DROP TRIGGER IF EXISTS `from_load_data_to_table2`;
@@ -78,7 +78,7 @@ class OneManyImporter
         DROP TABLE IF EXISTS `$tempTable`;
         DROP TRIGGER IF EXISTS `from_load_data_to_table1`;
         DROP TRIGGER IF EXISTS `from_load_data_to_table2`;
-EOF;
+SQL;
     }
 
     /**
@@ -127,7 +127,7 @@ EOF;
             // adds a column with the column type of $referenceTableLinkToFile, but named $fileLinkToReferenceTable
             $selections = "d.*, r.`$referenceTableLinkToFile` As `$fileLinkToReferenceTable`";
         }
-        return <<<EOF
+        return <<<SQL
         DROP TABLE IF EXISTS `$tempTable`;
 
         CREATE TABLE `$tempTable` AS
@@ -154,6 +154,6 @@ EOF;
 
     # cleanup
         DROP TABLE IF EXISTS `$tempTable`;
-EOF;
+SQL;
     }
 }

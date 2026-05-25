@@ -18,7 +18,7 @@ class Looper
         int    $maxIterations=1000
     )
     {
-        return <<<EOF
+        return <<<SQL
         DROP PROCEDURE IF EXISTS temp_looper;
 
         DELIMITER $$
@@ -35,6 +35,6 @@ class Looper
         DELIMITER ;
 
         DROP PROCEDURE IF EXISTS temp_looper;
-EOF;
+SQL;
     }
 }
