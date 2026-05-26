@@ -1,3 +1,34 @@
+[![License][ico-license]](LICENSE.md)
+![Release][ico-in-development]
+![Release][ico-release]
+![Release][ico-tag]
+![Download Size][ico-download-size]
+![Last Commit][ico-last-commit]
+
+![UNIT TESTS][ico-unit-tests]
+
+![Github Top Language][ico-top-language]
+
+![PHP version][ico-php-version]
+![PHPUNIT version][ico-phpunit-version]
+![COMPOSER version][ico-composer-version]
+
+[ico-license]: https://img.shields.io/badge/license-MIT-brightgreen.svg?style=for-the-badge
+[ico-in-development]: https://img.shields.io/badge/Release-Development-yellow?style=for-the-badge
+[ico-release]: https://img.shields.io/github/v/release/yorick2/sql-library?style=for-the-badge
+[ico-tag]: https://img.shields.io/github/v/tag/yorick2/sql-library?style=for-the-badge
+[ico-download-size]: https://img.shields.io/github/languages/code-size/yorick2/sql-library?style=for-the-badge
+[ico-last-commit]: https://img.shields.io/github/last-commit/yorick2/sql-library?style=for-the-badge
+
+[ico-unit-tests]: https://github.com/yorick2/sql-library/actions/workflows/UnitTests.yml/badge.svg
+
+[ico-top-language]: https://img.shields.io/github/languages/top/yorick2/sql-library?style=for-the-badge&logoColor=white
+[ico-php-version]: https://img.shields.io/badge/PHP%208.1-777BB4?style=for-the-badge&logo=php&logoColor=white
+[ico-phpunit-version]: https://img.shields.io/badge/PHPUnit-777BB4?style=for-the-badge&logoColor=white
+[ico-composer-version]: https://img.shields.io/badge/composer-885630?style=for-the-badge&logo=composer&logoColor=white
+
+[<img src="https://www.paypalobjects.com/en_GB/i/btn/btn_donate_LG.gif">](https://www.paypal.com/donate/?hosted_button_id=95TTM4Z9Q7MNG)
+
 # sql-library
 ## Definitions
 ### Simple Tables
