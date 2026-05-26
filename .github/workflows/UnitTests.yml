@@ -1,0 +1,58 @@
+            - name: PHPUnit (php-actions)
+  # You may pin to the exact commit or the version.
+  # uses: php-actions/phpunit@1789d1964b1bfda259b1cb42a72b65299c2cae35
+  uses: php-actions/phpunit@v4
+  with:
+    # What version of PHPUnit to use
+    version: # optional, default is composer
+    # What version of PHP to use
+    php_version: # optional, default is latest
+    # Space separated list of extensions to configure with the PHP build
+    php_extensions: # optional
+    # Path to a vendored phpunit binary
+    vendored_phpunit_path: # optional
+    # Configuration file location
+    configuration: # optional
+    # JUnit output file location
+    log_junit: # optional
+    # JUnit output file location
+    log_teamcity: # optional
+    # Write documentation in HTML format to file
+    testdox_html: # optional
+    # Write documentation in Text format to file
+    testdox_text: # optional
+    # Memory limit
+    memory_limit: # optional
+    # Path to bootstrap file
+    bootstrap: # optional
+    # Filter which tests to run
+    filter: # optional
+    # Specify a testsuite to run
+    testsuite: # optional
+    # Only runs tests from the specified group(s)
+    group: # optional
+    # Exclude tests from the specified group(s)
+    exclude_group: # optional
+    # Only search for test in files with specified suffix(es)
+    test_suffix: # optional
+    # Path to directory to whitelist for code coverage analysis
+    whitelist: # optional
+    # Include directory in code coverage reporting
+    coverage_filter: # optional
+    # Generate code coverage report in Clover XML format
+    coverage_clover: # optional
+    # Generate code coverage report in Cobertura XML format
+    coverage_cobertura: # optional
+    # Generate code coverage report in Crap4J XML format
+    coverage_crap4j: # optional
+    # Generate code coverage report in HTML format
+    coverage_html: # optional
+    # Export PHP_CodeCoverage object to file
+    coverage_php: # optional
+    # Generate code coverage report in text format (true to output to console, path to output to file)
+    coverage_text: # optional
+    # Generate code coverage report in PHPUnit XML format
+    coverage_xml: # optional
+    # Extra arguments to pass to the phpunit binary
+    args: # optional
+          
