@@ -34,8 +34,82 @@ SQL;
         TABLE_NAME = N'$table'
 SQL;
         for ($i = 0; $i < count($columnsToIgnore); $i++) {
-            $query.= "\n    AND COLUMN_NAME != '$columnsToIgnore[0]'";
+            $query.= "\n    AND COLUMN_NAME != '$columnsToIgnore[$i]'";
         }
         return $query.';';
+    }
+
+    /**
+     * @param string $table
+     * @param array $tableRows
+     * @param string $column
+     * @param array $values
+     * @return string
+     */
+     public static function getSelectAllWhereInArrayWithDuplicatesSqlText(string $table, array $tableRows, string $column, array $values):string
+    {
+        $columnList='`'.implode('`,`',$tableRows).'`';
+        $query=<<<SQL
+SELECT $columnList FROM `$table`
+WHERE `$column`=$values[0]
+SQL;
+        for ($i = 0; $i < count($values); $i++) {
+            $query.="\n".<<<SQL
+            UNION ALL
+            SELECT $columnList FROM `$table`
+            WHERE `$column`=$values[$i]
+            SQL;
+        }
+        return $query.';';
+    }
+
+
+    /**
+     * @param string $destinationTable
+     * @param array $destinationTableRows
+     * @param string $sourceTable
+     * @param array $sourceTableRows
+     * @param string $column
+     * @param array $values
+     * @return string
+     */
+    public static function getInsertAllWhereInArrayWithDuplicatesSqlText(
+        string $destinationTable,
+        array  $destinationTableRows,
+        string $sourceTable,
+        array  $sourceTableRows,
+        string $column,
+        array $values
+    ):string
+    {
+        $select=rtrim(
+            self::getSelectAllWhereInArrayWithDuplicatesSqlText($sourceTable, $sourceTableRows, $column, $values),
+            ';'
+        );
+        $columnList='`'.implode('`,`',$sourceTableRows).'`';
+        $destinationTableList='`'.implode('`,`',$destinationTableRows).'`';
+        return<<<SQL
+INSERT INTO `$destinationTable`($destinationTableList) 
+SELECT  $columnList FROM
+        (
+            $select
+        ) AS t
+SQL;
+    }
+
+    /**
+     * @param string $table
+     * @param array $columns
+     * @return string
+     */
+    public static function getAllDuplicatesForColumnsSqlText(string $table, array $columns) :string
+    {
+        $columnsString = '`'.implode('`,`', $columns).'`';
+        return<<<SQL
+        select $columnsString, count(*) as NumDuplicates
+        from $table
+        group by $columnsString
+        having NumDuplicates > 1
+SQL;
     }
 }

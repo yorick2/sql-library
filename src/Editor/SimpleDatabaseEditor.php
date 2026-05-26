@@ -371,19 +371,19 @@ SQL;
         bool $orderAscending=true
     ){
         if($orderAscending){
-            return <<<EOL
+            return <<<SQL
                 DELETE FROM `$table` USING `$table`,
                     `$table` e1
                 WHERE `$table`.`$orderColumn` > e1.`$orderColumn`
                     AND `$table`.`$column` = e1.`$column`;
-EOL;
+SQL;
         }
-        return <<<EOL
+        return <<<SQL
                 DELETE FROM `$table` USING `$table`,
                     `$table` e1
                 WHERE `$table`.`$orderColumn` > e1.`$orderColumn`
                     AND `$table`.`$column` = e1.`$column`;
-EOL;
+SQL;
     }
 
 }

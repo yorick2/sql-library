@@ -9,10 +9,11 @@ class ManyManyDatabaseEditor
      * @param string $table
      * @param string $column
      * @param string $orderingColumn
-     * @param boolean $orderAsc
+     * @param bool $orderAsc
+     * @param string $tempTable
      * @return string
      */
-    static function getSetColumnValueAsLastValueIfNotSetSqlTriggerText(
+    public static function getSetColumnValueAsLastValueIfNotSetSqlTriggerText(
         string $table,
         string $column,
         string $orderingColumn='id',
@@ -31,7 +32,8 @@ class ManyManyDatabaseEditor
          * @param string $table
          * @param string $column
          * @param string $orderingColumn
-         * @param boolean $orderAsc
+         * @param bool $orderAsc
+         * @param string $tempTable
          * @return string
          */
         static function getSetColumnValueAsLastValueWhenNotSetSqlText(
@@ -70,8 +72,6 @@ class ManyManyDatabaseEditor
         DROP TEMPORARY TABLE $tempTable;
 SQL;
     }
-
-
 
     /**
      * @param string $table
@@ -324,37 +324,88 @@ SQL;
     /**
      * remove rows where a previous row (by $orderColumn) has the same value for a given column
      * @param string $table
+     * @param array $duplicateColumns
      * @param string $linkColumn,
      * @param string $linkTable,
      * @param string $linkTableLinkColumn,
-     * @param string $column
+     * @param array $remainingLinkTableColumns
      * @param string $orderColumn
      * @param bool $orderAscending
+     * @param string $tempTable
      * @return string
      */
-    static function getRemoveLaterDuplicatesSqlText(
+    static function getReassignAndRemoveDuplicatesSqlText(
+        array $duplicateColumns,
         string $table,
         string $linkColumn,
         string $linkTable,
         string $linkTableLinkColumn,
-        string $column,
+        array  $remainingLinkTableColumns,
         string $orderColumn='id',
-        bool   $orderAscending=true
-    ){
+        bool   $orderAscending=true,
+        string $tempTable='temp'
+    ) :string
+    {
         if($orderAscending){
-            return <<<EOL
-                DELETE FROM `$table` USING `$table`,
-                    `$table` e1
-                WHERE `$table`.`$orderColumn` > e1.`$orderColumn`
-                    AND `$table`.`$column` = e1.`$column`;
-EOL;
+            $direction = '>';
+        }else{
+            $direction = '>';
         }
-        return <<<EOL
-                DELETE FROM `$table` USING `$table`,
-                    `$table` e1
-                WHERE `$table`.`$orderColumn` > e1.`$orderColumn`
-                    AND `$table`.`$column` = e1.`$column`;
-EOL;
+        $queryAndStatement='';
+        for ($i = 0; $i < count($duplicateColumns); $i++) {
+            $queryAndStatement.="\n".<<<SQL
+       AND a.`$duplicateColumns[$i]` <=> b.`$duplicateColumns[$i]`
+SQL;
+        }
+            $query=<<<SQL
+-- setup
+DROP TABLE IF EXISTS `temp`;
+
+-- get new and old ids
+CREATE table `$tempTable` AS
+    SELECT old_id, MIN(b_id) AS new_id
+	FROM
+  (     
+      SELECT 
+           a.`$linkColumn` AS old_id,
+           b.$linkColumn AS b_id
+       FROM `$table` a, `$table` b
+       WHERE a.`$linkColumn` $direction b.`$linkColumn` $queryAndStatement
+  ) AS t 
+	GROUP BY old_id ;
+
+-- update link table
+UPDATE `$linkTable` as l
+JOIN `$tempTable` as t ON (l.$linkTableLinkColumn = t.old_id)
+SET l.$linkTableLinkColumn = t.new_id;
+
+-- remove duplicates from link table
+DELETE FROM `$linkTable` USING `$linkTable`,
+    `$linkTable` l
+WHERE `$linkTable`.`$orderColumn` $direction l.`$orderColumn`
+    AND `$linkTable`.`$linkTableLinkColumn` <=> l.`$linkTableLinkColumn`
+SQL;
+        for ($i = 0; $i < count($remainingLinkTableColumns); $i++) {
+            $query.="\nAND `$linkTable`.`$remainingLinkTableColumns[$i]` <=> l.`$remainingLinkTableColumns[$i]`";
+        }
+        $query.=";\n";
+        $query.=<<<SQL
+
+-- remove duplicates (by $orderColumn) in table
+ DELETE FROM `$table` WHERE `$orderColumn` IN (
+  SELECT * FROM (
+      SELECT 
+           a.`$orderColumn` AS `$orderColumn`
+       FROM `$table` a, `$table` b
+       WHERE a.`$orderColumn` > b.`$orderColumn` $queryAndStatement
+  ) AS t 
+	GROUP BY `$orderColumn`
+);
+
+-- cleanup
+DROP TABLE IF EXISTS `$tempTable`;
+SQL;
+        return $query;
     }
 
 }

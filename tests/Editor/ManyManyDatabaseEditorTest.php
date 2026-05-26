@@ -16,8 +16,8 @@ class ManyManyDatabaseEditorTest extends TestCase
 {
     protected mysqli $db;
 
-    protected string $file='/tmp/data/many-many.csv';
-    protected string $localFile='../data/many-many.csv';
+    protected string $file='/tmp/data/many-many-simple.tsv';
+    protected string $localFile='../data/many-many.tsv';
     protected string $fileCommaColumn = '/tmp/data/many-many-editor-commas.tsv';
     protected string $localFileCommasDesired = '../data/many-many-editor-commas-desired.tsv';
     protected string $localFileCommasDesiredLink = '../data/many-many-editor-commas-desired-link.tsv';
@@ -27,13 +27,17 @@ class ManyManyDatabaseEditorTest extends TestCase
     protected string $fileCharacterColumn = '/tmp/data/many-many-editor-character.tsv';
     protected string $localFileCharacterDesired = '../data/many-many-editor-character-desired.tsv';
     protected string $localFileCharacterDesiredLink = '../data/many-many-editor-character-desired-link.tsv';
-    protected string $fileRemoveLaterDuplicates = '/tmp/data/many-many-editor-remove-later-duplicates1.tsv';
-    protected string $fileRemoveLaterDuplicates2 = '/tmp/data/many-many-editor-remove-later-duplicates2.tsv';
-    protected string $localFileRemoveLaterDuplicatesDesired = '../data/many-many-editor-remove-later-duplicates-desired1.tsv';
-    protected string $localFileRemoveLaterDuplicatesDesiredLink = '../data/many-many-editor-remove-later-duplicates-desired-link.tsv';
+    protected string $fileRemoveLaterDuplicates = '/tmp/data/many-many-editor-remove-later-duplicates.tsv';
+    protected string $localFileRemoveLaterDuplicatesDesired1 = '../data/many-many-editor-remove-later-duplicates-desired1.tsv';
+    protected string $localFileRemoveLaterDuplicatesDesiredLink1 = '../data/many-many-editor-remove-later-duplicates-desired-link1.tsv';
+    protected string $localFileRemoveLaterDuplicatesDesired2 = '../data/many-many-editor-remove-later-duplicates-desired2.tsv';
+    protected string $localFileRemoveLaterDuplicatesDesiredLink2 = '../data/many-many-editor-remove-later-duplicates-desired-link2.tsv';
+    protected string $localFileRemoveLaterDuplicatesDesired3 = '../data/many-many-editor-remove-later-duplicates-desired3.tsv';
+    protected string $localFileRemoveLaterDuplicatesDesiredLink3 = '../data/many-many-editor-remove-later-duplicates-desired-link3.tsv';
 
 
     protected string $linkTable = 'link';
+    protected array $allLinkTableColumns = ['table1_id','table2_id','table3_id','table4_id'];
     protected string $table1 = 'table1';
     protected string $table2 = 'table2';
     protected string $table3 = 'table3';
@@ -61,10 +65,12 @@ class ManyManyDatabaseEditorTest extends TestCase
         $this->db = DatabaseSqlHelper::getInstance()->getConnection();
         $query=<<<SQL
             CREATE TABLE `link` (
+                `id` int NOT NULL AUTO_INCREMENT,
                 `table1_id` int NOT NULL,
                 `table2_id` int,
                 `table3_id` int,
-                `table4_id` int
+                `table4_id` int,
+                PRIMARY KEY (id)
             );
             CREATE TABLE `table1` (
                 `id` int NOT NULL AUTO_INCREMENT,
@@ -120,7 +126,7 @@ SQL;
         $query=ManyManyImporter::getComplexImportSqlText(
             100,
             $this->linkTable,
-            ['table1_id','table2_id','table3_id','table4_id'],
+            $this->allLinkTableColumns,
             [$this->table1, $this->table2, $this->table3, $this->table4],
             [
                 '`id`,`text1`,`text1b`,`text1c`',
@@ -143,7 +149,7 @@ SQL;
         while ($this->db->next_result()) {
             // needed to run the multi_query
         }
-        $query=misc::getTableColumnNamesStringExcluding($this->linkTable, [$linkTableLinkColumn],'`,`');
+        $query=misc::getTableColumnNamesStringExcluding($this->linkTable, [$linkTableLinkColumn,'id'],'`,`');
         $remainingColumnsInLinkTable=[];
         $this->db->multi_query($query);
         do {
@@ -221,7 +227,7 @@ SQL;
         $query=ManyManyImporter::getComplexImportSqlText(
             100,
             $this->linkTable,
-            ['table1_id','table2_id','table3_id','table4_id'],
+            $this->allLinkTableColumns,
             [$this->table1, $this->table2, $this->table3, $this->table4],
             [
                 '`id`,`text1`,`text1b`,`text1c`',
@@ -247,7 +253,7 @@ SQL;
 
         $splitCol = 'text1';
         $linkTableLinkColumn='table1_id';
-        $query=misc::getTableColumnNamesStringExcluding($this->linkTable, [$linkTableLinkColumn],'`,`');
+        $query=misc::getTableColumnNamesStringExcluding($this->linkTable, [$linkTableLinkColumn,'id'],'`,`');
         $remainingColumnsInLinkTable=[];
         $this->db->multi_query($query);
         do {
@@ -315,7 +321,7 @@ SQL;
         $query=ManyManyImporter::getComplexImportSqlText(
             100,
             $this->linkTable,
-            ['table1_id','table2_id','table3_id','table4_id'],
+            $this->allLinkTableColumns,
             [$this->table1, $this->table2, $this->table3, $this->table4],
             [
                 '`id`,`text1`,`text1b`,`text1c`',
@@ -341,7 +347,7 @@ SQL;
 
         $splitColsArray = ['text1','text1b'];
         $linkTableLinkColumn='table1_id';
-        $query=misc::getTableColumnNamesStringExcluding($this->linkTable, [$linkTableLinkColumn],'`,`');
+        $query=misc::getTableColumnNamesStringExcluding($this->linkTable, [$linkTableLinkColumn,'id'],'`,`');
         $remainingColumnsInLinkTable=[];
         $this->db->multi_query($query);
         do {
@@ -377,7 +383,13 @@ SQL;
                 ->query('SELECT * FROM `' . $this->table1 . '` WHERE `' . $splitColsArray[$i] . '` LIKE "%'.$splitCharacterArray[$i].'%"');
             $this->assertEquals(0, $result->num_rows, "test has no rows containing a '$splitCharacterArray[$i]' in column `$splitColsArray[$i]`");
         }
-
+        $this->assertEquals(
+            0,
+            $this->db
+                ->query((new misc())->getAllDuplicatesForColumnsSqlText('link',$this->allLinkTableColumns))
+                ->num_rows,
+            'duplicates still exist in table "link". '
+        );
         (new DataTestLibrary($this->name()))
             ->compareTableToCsvData(
                 $this->table1,
@@ -399,10 +411,13 @@ SQL;
 
     public function test_getRemoveLaterDuplicatesSqlText(){
         $duplicateColumn="text1";
-        $this->assertFilesExistLocally([__DIR__.'/'.$this->file]);
-        $this->assertFilesExistOnSqlServer([$this->localFileRemoveLaterDuplicatesDesired]);
+        $this->assertFilesExistLocally([
+            __DIR__.'/'.$this->localFileRemoveLaterDuplicatesDesired1,
+            __DIR__.'/'.$this->localFileRemoveLaterDuplicatesDesiredLink1
+        ]);
+        $this->assertFilesExistOnSqlServer([$this->fileRemoveLaterDuplicates]);
         $this->assertEquals(0, $this->db->query("SELECT * FROM `$this->table1` LIMIT 1")->num_rows);
-        $query=ManyManyImporter::getSqlText(
+        $query=ManyManyImporter::getSimpleImportSqlText(
             100,
             'link',
             '`table1_id`,`table2_id`',
@@ -412,20 +427,37 @@ SQL;
             $this->table2,
             'id,text2',
             'NEW.`id`,NEW.`text2`',
-            $this->file,
+            $this->fileRemoveLaterDuplicates,
             '`text2`,`text1`,`text1b`,`text1c`'
         )
-            .ManyManyDatabaseEditor::getRemoveLaterDuplicatesSqlText(
-                $this->table1,
-                $duplicateColumn,
+        ."\n-- insert duplicate rows\n"
+            .(new misc())->getInsertAllWhereInArrayWithDuplicatesSqlText(
+                'link',
+                $this->allLinkTableColumns,
+                'link',
+                $this->allLinkTableColumns,
                 'id',
-                true
+                [1,4,3,3,2,4]
             );
         $this->db->multi_query($query);
         while ($this->db->next_result()) {
             ;
         }
-
+        $query=ManyManyDatabaseEditor::getReassignAndRemoveDuplicatesSqlText(
+                ['text1'],
+                $this->table1,
+                'id',
+                $this->linkTable,
+                'table1_id',
+                ['table2_id','table3_id','table4_id'],
+                'id',
+                true,
+                'temp'
+            );
+        $this->db->multi_query($query);
+        while ($this->db->next_result()) {
+            ;
+        }
         $this->assertEquals(
             0,
             $this->db
@@ -433,10 +465,180 @@ SQL;
                 ->num_rows,
             'duplicates still exist'
         );
+        $this->assertEquals(
+            0,
+            $this->db
+                ->query((new misc())->getAllDuplicatesForColumnsSqlText('link',$this->allLinkTableColumns))
+                ->num_rows,
+            'duplicates still exist in table "link". '
+        );
         (new DataTestLibrary($this->name()))
             ->compareTableToCsvData(
                 $this->table1,
-                __DIR__ . '/' . $this->localFileRemoveLaterDuplicatesDesired,
+                __DIR__ . '/' . $this->localFileRemoveLaterDuplicatesDesired1,
+                [],
+                "\t"
+            )
+            ->compareTableToCsvData(
+                $this->linkTable,
+                __DIR__ . '/' . $this->localFileRemoveLaterDuplicatesDesiredLink1,
+                [],
+                "\t"
+            );
+    }
+
+    public function test_getRemoveLaterDuplicatesSqlText_2(){
+        $duplicateColumns=['text1','text1b'];
+        $this->assertFilesExistLocally([
+            __DIR__.'/'.$this->localFileRemoveLaterDuplicatesDesired2,
+            __DIR__.'/'.$this->localFileRemoveLaterDuplicatesDesiredLink2
+        ]);
+        $this->assertFilesExistOnSqlServer([$this->fileRemoveLaterDuplicates]);
+        $this->assertEquals(0, $this->db->query("SELECT * FROM `$this->table1` LIMIT 1")->num_rows);
+        $query=ManyManyImporter::getSimpleImportSqlText(
+            100,
+            'link',
+            '`table1_id`,`table2_id`',
+            $this->table1,
+            '`id`,`text1`,`text1b`,`text1c`',
+            'NEW.`id`,NEW.`text1`,new.`text1b`,new.`text1c`',
+            $this->table2,
+            'id,text2',
+            'NEW.`id`,NEW.`text2`',
+            $this->fileRemoveLaterDuplicates,
+            '`text2`,`text1`,`text1b`,`text1c`'
+        )
+            ."\n-- insert duplicate rows\n"
+            .(new misc())->getInsertAllWhereInArrayWithDuplicatesSqlText(
+                'link',
+                $this->allLinkTableColumns,
+                'link',
+                $this->allLinkTableColumns,
+                'id',
+                [1,4,3,3,2,4]
+            );
+        $this->db->multi_query($query);
+        while ($this->db->next_result()) {
+            ;
+        }
+        $query=ManyManyDatabaseEditor::getReassignAndRemoveDuplicatesSqlText(
+            $duplicateColumns,
+            $this->table1,
+            'id',
+            $this->linkTable,
+            'table1_id',
+            ['table2_id','table3_id','table4_id'],
+            'id',
+            true,
+            'temp'
+        );
+        $this->db->multi_query($query);
+        while ($this->db->next_result()) {
+            ;
+        }
+        $this->assertEquals(
+            0,
+            $this->db
+                ->query((new misc())->getAllDuplicatesForColumnsSqlText($this->table1, $duplicateColumns))
+                ->num_rows,
+            'duplicates still exist in table "$this->table1". '
+        );
+        $this->assertEquals(
+            0,
+            $this->db
+                ->query((new misc())->getAllDuplicatesForColumnsSqlText('link',$this->allLinkTableColumns))
+                ->num_rows,
+            'duplicates still exist in table "link". '
+        );
+        (new DataTestLibrary($this->name()))
+            ->compareTableToCsvData(
+                $this->table1,
+                __DIR__ . '/' . $this->localFileRemoveLaterDuplicatesDesired2,
+                [],
+                "\t"
+            )
+            ->compareTableToCsvData(
+                $this->linkTable,
+                __DIR__ . '/' . $this->localFileRemoveLaterDuplicatesDesiredLink2,
+                [],
+                "\t"
+            );
+    }
+
+    public function test_getRemoveLaterDuplicatesSqlText_3(){
+        $duplicateColumns=['text1','text1b','text1c'];
+        $this->assertFilesExistLocally([
+            __DIR__.'/'.$this->localFileRemoveLaterDuplicatesDesired3,
+            __DIR__.'/'.$this->localFileRemoveLaterDuplicatesDesiredLink3
+        ]);
+        $this->assertFilesExistOnSqlServer([$this->fileRemoveLaterDuplicates]);
+        $this->assertEquals(0, $this->db->query("SELECT * FROM `$this->table1` LIMIT 1")->num_rows);
+        $query=ManyManyImporter::getSimpleImportSqlText(
+            100,
+            'link',
+            '`table1_id`,`table2_id`',
+            $this->table1,
+            '`id`,`text1`,`text1b`,`text1c`',
+            'NEW.`id`,NEW.`text1`,new.`text1b`,new.`text1c`',
+            $this->table2,
+            'id,text2',
+            'NEW.`id`,NEW.`text2`',
+            $this->fileRemoveLaterDuplicates,
+            '`text2`,`text1`,`text1b`,`text1c`'
+        )
+            ."\n-- insert duplicate rows\n"
+            .(new misc())->getInsertAllWhereInArrayWithDuplicatesSqlText(
+                'link',
+                $this->allLinkTableColumns,
+                'link',
+                $this->allLinkTableColumns,
+                'id',
+                [1,4,3,3,2,4]
+            );
+        $this->db->multi_query($query);
+        while ($this->db->next_result()) {
+            ;
+        }
+        $query=ManyManyDatabaseEditor::getReassignAndRemoveDuplicatesSqlText(
+            $duplicateColumns,
+            $this->table1,
+            'id',
+            $this->linkTable,
+            'table1_id',
+            ['table2_id','table3_id','table4_id'],
+            'id',
+            true,
+            'temp'
+        );
+        $this->db->multi_query($query);
+        while ($this->db->next_result()) {
+            ;
+        }
+        $this->assertEquals(
+            0,
+            $this->db
+                ->query((new misc())->getAllDuplicatesForColumnsSqlText($this->table1,$duplicateColumns))
+                ->num_rows,
+            'duplicates still exist in table "link". '
+        );
+        $this->assertEquals(
+            0,
+            $this->db
+                ->query((new misc())->getAllDuplicatesForColumnsSqlText('link',$this->allLinkTableColumns))
+                ->num_rows,
+            'duplicates still exist in table "link". '
+        );
+
+        (new DataTestLibrary($this->name()))
+            ->compareTableToCsvData(
+                $this->table1,
+                __DIR__ . '/' . $this->localFileRemoveLaterDuplicatesDesired3,
+                [],
+                "\t"
+            )
+            ->compareTableToCsvData(
+                $this->linkTable,
+                __DIR__ . '/' . $this->localFileRemoveLaterDuplicatesDesiredLink3,
                 [],
                 "\t"
             );

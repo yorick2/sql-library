@@ -45,8 +45,10 @@ class ManyManyImporterTest extends TestCase
         $this->db = DatabaseSqlHelper::getInstance()->getConnection();
         $query=<<<SQL
             CREATE TABLE `link` (
+                `id` int NOT NULL AUTO_INCREMENT,
                 `table1_id` int NOT NULL,
-                `table2_id` int
+                `table2_id` int,
+                PRIMARY KEY (id)
             );
             CREATE TABLE `table1` (
                 `id` int NOT NULL AUTO_INCREMENT,
