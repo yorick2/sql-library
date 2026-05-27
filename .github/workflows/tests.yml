@@ -18,8 +18,8 @@ jobs:
         php: [ 7.4, 7.3, 7.2, 8.1, 8.2 ]
         dependency-version: [ prefer-lowest, prefer-stable ]
         os: [ ubuntu-latest, windows-latest ]
-        include:
-        exclude:
+        #include:
+        #exclude:
     name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.dependency-version }} - ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
