@@ -1,4 +1,4 @@
-name: PhpUnit
+name: PHPUnit
 
 on:
   push:
