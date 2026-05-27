@@ -67,6 +67,12 @@ jobs:
 
         echo "list files in /tmp/data:"
         ls /tmp/data
+        
+        echo "\n\n\nlist files in /tmp:"
+        li -l /tmp
+        
+        cho "\n\n\nlist files in /tmp/mysql-files:"
+        ls -l /tmp/mysql-files
     - name: Run tests
       env:
         DATABASE_NAME: testdb
