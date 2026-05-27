@@ -13,8 +13,8 @@ use PaulMillband\SqlLibrary\Importer\SimpleImporter;
 class SimpleImporterTest extends TestCase
 {
     protected mysqli $db;
-    protected string $localFile = '../mysql-files/simple.tsv';
-    protected string $file = '/var/lib/mysql-files/simple.tsv';
+    protected string $localFile = '../data/simple.tsv';
+    protected string $file = '/tmp/data/simple.tsv';
 
     protected function setUp(): void
     {
