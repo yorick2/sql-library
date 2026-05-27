@@ -63,8 +63,9 @@ jobs:
         mkdir -p /tmp/data
         cp tests/data/* /tmp/data
         
-        echo "Test data copied to /tmp/data"
+        echo "Test data copied to /tmp/data\n"
 
+        echo "list files in /tmp/data:"
         ls /tmp/data
     - name: Run tests
       env:
