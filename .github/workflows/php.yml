@@ -62,7 +62,7 @@ jobs:
         # Create directory in MySQL container and copy test data
         mkdir -p /tmp/data
         cp tests/data/* /tmp/data
-        sudo chown -R mysql:mysql /var/data
+        sudo chown -R mysql:mysql /tmp/data
         
         echo "Test data copied to /tmp/data"
 
