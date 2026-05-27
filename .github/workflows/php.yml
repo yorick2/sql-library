@@ -21,7 +21,7 @@ jobs:
           MYSQL_ROOT_PASSWORD: testrootpass
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3 --secure_file_priv = "/tmp/data/”
 
     steps:
     - uses: actions/checkout@v4
@@ -78,7 +78,8 @@ jobs:
         echo
         echo
         cat /etc/my.cnf
-        echo '[mysqld] secure_file_priv = "/usr/local/”' > /etc/my.cnf
+        sudo echo '[mysqld] secure_file_priv = "/usr/local/”' > /etc/my.cnf
+        sudo echo '[mysqld] secure_file_priv = "/usr/local/”' > /etc/mysql/my.cnf
         echo
         echo "cat /etc/my.cnf:"
         cat /etc/my.cnf
