@@ -26,5 +26,8 @@
   "prefer-stable": true,
     "require-dev": {
         "phpunit/phpunit": "^12.5",
-        "thingengineer/mysqli-database-class": "dev-master"}
+        "thingengineer/mysqli-database-class": "dev-master"},
+  "scripts": {
+    "test": "vendor/bin/phpunit tests"
+  }
 }
