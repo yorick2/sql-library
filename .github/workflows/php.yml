@@ -19,6 +19,7 @@ jobs:
         env:
           MYSQL_DATABASE: testdb
           MYSQL_ROOT_PASSWORD: testrootpass
+          MYSQL_SECURE_FILE: /var/lib/mysql-files
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
@@ -90,8 +91,8 @@ jobs:
         # echo
         # echo
         # cat /etc/my.cnf
-        sudo echo '[mysqld] secure_file_priv = "/var/lib/mysql-files”' > /etc/my.cnf
-        sudo echo '[mysqld] secure_file_priv = "/var/lib/mysql-files”' > /etc/mysql/my.cnf
+        # sudo echo '[mysqld] secure_file_priv = "/var/lib/mysql-files”' > /etc/my.cnf
+        # sudo echo '[mysqld] secure_file_priv = "/var/lib/mysql-files”' > /etc/mysql/my.cnf
     - name: Run tests
       env:
         DATABASE_NAME: testdb
