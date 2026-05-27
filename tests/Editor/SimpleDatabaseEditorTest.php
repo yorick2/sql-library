@@ -14,22 +14,22 @@ use PaulMillband\SqlLibrary\Importer\SimpleImporter;
 class SimpleDatabaseEditorTest extends TestCase
 {
     protected mysqli $db;
-    protected string $file = '/tmp/data/simple.tsv';
-    protected string $fileCommaColumn = '/tmp/data/editor-commas.tsv';
-    protected string $localFileCommasDesired = '../data/editor-commas-desired.tsv';
-    protected string $fileCommaMultipleColumns = '/tmp/data/editor-comma-multiple-columns.tsv';
-    protected string $localFileCommaMultipleColumnsDesired = '../data/editor-comma-multiple-columns-desired.tsv';
-    protected string $fileCharacterColumn = '/tmp/data/editor-character.tsv';
-    protected string $localFileCharacterDesired = '../data/editor-character-desired.tsv';
-    protected string $fileCharacterMultipleColumns = '/tmp/data/editor-character-multiple-columns.tsv';
-    protected string $localFileCharacterMultipleColumnsDesired = '../data/editor-character-multiple-columns-desired.tsv';
-    protected string $fileAsPrevious = '/tmp/data/editor-set-column-as-previous.tsv';
-    protected string $localFileAsPreviousDesired = '../data/editor-set-column-as-previous-desired.tsv';
-    protected string $localFileAsPreviousDescDesired = '../data/editor-set-column-as-previous-desc-desired.tsv';
-    protected string $localFileTriggerDesired = '../data/editor-trigger-desired.tsv';
-    protected string $localFileTriggerIfElseDesired = '../data/editor-trigger-if-else-desired.tsv';
-    protected string $fileRemoveLaterDuplicates = '/tmp/data/editor-remove-later-duplicates.tsv';
-    protected string $localFileRemoveLaterDuplicatesDesired = '../data/editor-remove-later-duplicates-desired.tsv';
+    protected string $file = '/var/lib/mysql-files/simple.tsv';
+    protected string $fileCommaColumn = '/var/lib/mysql-files/editor-commas.tsv';
+    protected string $localFileCommasDesired = '../mysql-files/editor-commas-desired.tsv';
+    protected string $fileCommaMultipleColumns = '/var/lib/mysql-files/editor-comma-multiple-columns.tsv';
+    protected string $localFileCommaMultipleColumnsDesired = '../mysql-files/editor-comma-multiple-columns-desired.tsv';
+    protected string $fileCharacterColumn = '/var/lib/mysql-files/editor-character.tsv';
+    protected string $localFileCharacterDesired = '../mysql-files/editor-character-desired.tsv';
+    protected string $fileCharacterMultipleColumns = '/var/lib/mysql-files/editor-character-multiple-columns.tsv';
+    protected string $localFileCharacterMultipleColumnsDesired = '../mysql-files/editor-character-multiple-columns-desired.tsv';
+    protected string $fileAsPrevious = '/var/lib/mysql-files/editor-set-column-as-previous.tsv';
+    protected string $localFileAsPreviousDesired = '../mysql-files/editor-set-column-as-previous-desired.tsv';
+    protected string $localFileAsPreviousDescDesired = '../mysql-files/editor-set-column-as-previous-desc-desired.tsv';
+    protected string $localFileTriggerDesired = '../mysql-files/editor-trigger-desired.tsv';
+    protected string $localFileTriggerIfElseDesired = '../mysql-files/editor-trigger-if-else-desired.tsv';
+    protected string $fileRemoveLaterDuplicates = '/var/lib/mysql-files/editor-remove-later-duplicates.tsv';
+    protected string $localFileRemoveLaterDuplicatesDesired = '../mysql-files/editor-remove-later-duplicates-desired.tsv';
 
     protected function setUp(): void
     {

@@ -16,24 +16,24 @@ class ManyManyDatabaseEditorTest extends TestCase
 {
     protected mysqli $db;
 
-    protected string $file='/tmp/data/many-many-simple.tsv';
-    protected string $localFile='../data/many-many.tsv';
-    protected string $fileCommaColumn = '/tmp/data/many-many-editor-commas.tsv';
-    protected string $localFileCommasDesired = '../data/many-many-editor-commas-desired.tsv';
-    protected string $localFileCommasDesiredLink = '../data/many-many-editor-commas-desired-link.tsv';
-    protected string $fileSplitMultipleColumns = '/tmp/data/many-many-editor-split-multiple-columns.tsv';
-    protected string $localFileSplitMultipleColumnsDesired = '../data/many-many-editor-split-multiple-columns-desired.tsv';
-    protected string $localFileSplitMultipleColumnsDesiredLink = '../data/many-many-editor-split-multiple-columns-desired-link.tsv';
-    protected string $fileCharacterColumn = '/tmp/data/many-many-editor-character.tsv';
-    protected string $localFileCharacterDesired = '../data/many-many-editor-character-desired.tsv';
-    protected string $localFileCharacterDesiredLink = '../data/many-many-editor-character-desired-link.tsv';
-    protected string $fileRemoveLaterDuplicates = '/tmp/data/many-many-editor-remove-later-duplicates.tsv';
-    protected string $localFileRemoveLaterDuplicatesDesired1 = '../data/many-many-editor-remove-later-duplicates-desired1.tsv';
-    protected string $localFileRemoveLaterDuplicatesDesiredLink1 = '../data/many-many-editor-remove-later-duplicates-desired-link1.tsv';
-    protected string $localFileRemoveLaterDuplicatesDesired2 = '../data/many-many-editor-remove-later-duplicates-desired2.tsv';
-    protected string $localFileRemoveLaterDuplicatesDesiredLink2 = '../data/many-many-editor-remove-later-duplicates-desired-link2.tsv';
-    protected string $localFileRemoveLaterDuplicatesDesired3 = '../data/many-many-editor-remove-later-duplicates-desired3.tsv';
-    protected string $localFileRemoveLaterDuplicatesDesiredLink3 = '../data/many-many-editor-remove-later-duplicates-desired-link3.tsv';
+    protected string $file='/var/lib/mysql-files/many-many-simple.tsv';
+    protected string $localFile='../mysql-files/many-many.tsv';
+    protected string $fileCommaColumn = '/var/lib/mysql-files/many-many-editor-commas.tsv';
+    protected string $localFileCommasDesired = '../mysql-files/many-many-editor-commas-desired.tsv';
+    protected string $localFileCommasDesiredLink = '../mysql-files/many-many-editor-commas-desired-link.tsv';
+    protected string $fileSplitMultipleColumns = '/var/lib/mysql-files/many-many-editor-split-multiple-columns.tsv';
+    protected string $localFileSplitMultipleColumnsDesired = '../mysql-files/many-many-editor-split-multiple-columns-desired.tsv';
+    protected string $localFileSplitMultipleColumnsDesiredLink = '../mysql-files/many-many-editor-split-multiple-columns-desired-link.tsv';
+    protected string $fileCharacterColumn = '/var/lib/mysql-files/many-many-editor-character.tsv';
+    protected string $localFileCharacterDesired = '../mysql-files/many-many-editor-character-desired.tsv';
+    protected string $localFileCharacterDesiredLink = '../mysql-files/many-many-editor-character-desired-link.tsv';
+    protected string $fileRemoveLaterDuplicates = '/var/lib/mysql-files/many-many-editor-remove-later-duplicates.tsv';
+    protected string $localFileRemoveLaterDuplicatesDesired1 = '../mysql-files/many-many-editor-remove-later-duplicates-desired1.tsv';
+    protected string $localFileRemoveLaterDuplicatesDesiredLink1 = '../mysql-files/many-many-editor-remove-later-duplicates-desired-link1.tsv';
+    protected string $localFileRemoveLaterDuplicatesDesired2 = '../mysql-files/many-many-editor-remove-later-duplicates-desired2.tsv';
+    protected string $localFileRemoveLaterDuplicatesDesiredLink2 = '../mysql-files/many-many-editor-remove-later-duplicates-desired-link2.tsv';
+    protected string $localFileRemoveLaterDuplicatesDesired3 = '../mysql-files/many-many-editor-remove-later-duplicates-desired3.tsv';
+    protected string $localFileRemoveLaterDuplicatesDesiredLink3 = '../mysql-files/many-many-editor-remove-later-duplicates-desired-link3.tsv';
 
 
     protected string $linkTable = 'link';
