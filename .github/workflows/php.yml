@@ -60,7 +60,8 @@ jobs:
         done
         
         # Create directory in MySQL container and copy test data
-        cp tests/mysql-files/* /var/lib/mysql-files
+        sudo cp tests/mysql-files/* /var/lib/mysql-files
+        sudo chown -R mysql:mysql /var/lib/mysql-files
         echo "Test data copied to /var/lib/mysql-files"
 #        echo
 #        echo
