@@ -21,8 +21,8 @@ jobs:
           MYSQL_ROOT_PASSWORD: testrootpass
         ports:
           - 3306:3306
-        volumes:
-          - ${{ github.workspace }}/tests/data/simple.tsv:/var/lib/mysql-files/data/simple.tsv
+#        volumes:
+#          - ${{ github.workspace }}/tests/data/simple.tsv:/var/lib/mysql-files/data/simple.tsv
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
