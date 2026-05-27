@@ -51,10 +51,10 @@ jobs:
         DATABASE_NAME: testdb
         DATABASE_USERNAME: root          
         DATABASE_PASSWORD: testrootpass          
-        DATABASE_ENDPOINT: localhost
+        DATABASE_ENDPOINT: 127.0.0.1
       run: |
         # Wait for MySQL to be ready
-        until mysqladmin ping -h localhost -u root -ptestrootpass --silent; do
+        until mysqladmin ping -h 127.0.0.1 -u root -ptestrootpass --silent; do
           echo 'Waiting for MySQL...'
           sleep 1
         done
@@ -84,7 +84,7 @@ jobs:
         DATABASE_NAME: testdb
         DATABASE_USERNAME: root          
         DATABASE_PASSWORD: testrootpass          
-        DATABASE_ENDPOINT: localhost
+        DATABASE_ENDPOINT: 127.0.0.1
       run: |
         echo "list files in /tmp/data:"
         ls /tmp/data
