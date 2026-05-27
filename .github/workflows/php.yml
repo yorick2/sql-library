@@ -61,9 +61,9 @@ jobs:
         
         # Create directory in MySQL container and copy test data
         mkdir -p /tmp/data
-        cp tests/data/simple.tsv /tmp/data/simple.tsv
+        cp tests/data/* /tmp/data
         
-        echo "Test data copied to /tmp/data/simple.tsv"
+        echo "Test data copied to /tmp/data"
 
     - name: Run tests
       env:
