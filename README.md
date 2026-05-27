@@ -20,7 +20,7 @@
 [ico-download-size]: https://img.shields.io/github/languages/code-size/yorick2/sql-library?style=for-the-badge
 [ico-last-commit]: https://img.shields.io/github/last-commit/yorick2/sql-library?style=for-the-badge
 
-[ico-unit-tests]: https://github.com/yorick2/sql-library/actions/workflows/UnitTests.yml/badge.svg
+[ico-unit-tests]: https://github.com/yorick2/sql-library/actions/workflows/php.yml/badge.svg?branch=master
 
 [ico-top-language]: https://img.shields.io/github/languages/top/yorick2/sql-library?style=for-the-badge&logoColor=white
 [ico-php-version]: https://img.shields.io/badge/PHP%208.1-777BB4?style=for-the-badge&logo=php&logoColor=white
