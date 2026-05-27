@@ -1,0 +1,103 @@
+name: php2.yml
+
+on:
+  push:
+    branches: [ "master", "create-workflow" ]
+  pull_request:
+    branches: [ "master", "create-workflow" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      DB_DATABASE: test
+      DB_USER: root
+      DB_PASSWORD: testrootpass
+    steps:
+    - name: Set up MySQL
+      run: |
+        sudo /etc/init.d/mysql start
+        mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
+
+    - uses: actions/checkout@v4
+    
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.3
+
+    - name: Validate composer.json and composer.lock
+      run: composer validate --strict
+
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v3
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-
+
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-progress
+
+    - name: Wait for MySQL and setup test data
+      env:
+        DATABASE_NAME: test
+        DATABASE_USERNAME: root          
+        DATABASE_PASSWORD: testrootpass          
+        DATABASE_ENDPOINT: 127.0.0.1
+      run: |
+        # Wait for MySQL to be ready
+        until mysqladmin ping -h 127.0.0.1 -u root -ptestrootpass --silent; do
+          echo 'Waiting for MySQL...'
+          sleep 1
+        done
+
+
+        echo '"ls ${{ github.workspace }}/tests/data" :'
+        ls ${{ github.workspace }}/tests/data
+        # Create directory in MySQL container and copy test data
+#        sudo cp tests/mysql-files/* /var/lib/mysql-files/data
+#        sudo chown -R mysql:mysql /var/lib/mysql-files/data
+#        echo "Test data copied to /var/lib/mysql-files/data"
+#        echo
+#        echo
+#        echo "sudo ls -l /var/lib"
+#        sudo ls -l /var/lib
+#        echo
+#        echo
+#        echo "sudo ls -l /var/lib/mysql-files/data"
+#        sudo ls -l /var/lib/mysql-files/data
+#        echo
+#        echo
+        # echo "sudo ls /var/lib/mysql-files/data"
+        # sudo ls -l /var/lib/mysql-files/data
+        # sudo chown -R 1000:1000 /var/lib/mysql-files/data
+               
+
+        # echo ""
+        # echo "list files in /var/lib/mysql-files/data:"
+        # ls -la /var/lib/mysql-files/data
+        
+        # echo ""
+        # echo ""
+        # echo "list files in /tmp:"
+        # ls -la /tmp
+
+        # echo
+        # echo
+        # cat /etc/my.cnf
+        # sudo echo '[mysqld] secure_file_priv = "/var/lib/mysql-files/data”' > /etc/my.cnf
+        # sudo echo '[mysqld] secure_file_priv = "/var/lib/mysql-files/data”' > /etc/mysql/my.cnf
+    - name: Run tests
+      env:
+        DATABASE_NAME: test
+        DATABASE_USERNAME: root          
+        DATABASE_PASSWORD: testrootpass          
+        DATABASE_ENDPOINT: 127.0.0.1
+      run: |       
+        vendor/bin/phpunit tests
