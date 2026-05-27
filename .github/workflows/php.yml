@@ -19,9 +19,10 @@ jobs:
         env:
           MYSQL_DATABASE: testdb
           MYSQL_ROOT_PASSWORD: testrootpass
+          MYSQL_SECURE_FILE_PRIV: /tmp/data
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3 --secure_file_priv = "/tmp/data/”
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
     - uses: actions/checkout@v4
