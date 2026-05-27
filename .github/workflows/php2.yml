@@ -106,7 +106,7 @@ jobs:
 
     - name: Copy php .env file
       run: |
-        cp .github/workflows/.env .env
+        cp ${{ github.workspace }}/.github/workflows/.env ${{ github.workspace }}/.env
 
     - name: Run tests
       env:
@@ -115,4 +115,4 @@ jobs:
         DATABASE_PASSWORD: root
         DATABASE_ENDPOINT: 127.0.0.1
       run: |
-        vendor/bin/phpunit tests
+        ${{ github.workspace }}/vendor/bin/phpunit tests
