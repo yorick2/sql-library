@@ -63,16 +63,21 @@ jobs:
         mkdir -p /tmp/data
         cp tests/data/* /tmp/data
         
-        echo "Test data copied to /tmp/data\n"
+        echo "Test data copied to /tmp/data"
 
+        echo ""
         echo "list files in /tmp/data:"
         ls /tmp/data
         
-        echo "\n\n\nlist files in /tmp:"
+        echo ""
+        echo ""
+        echo "list files in /tmp:"
         ls -la /tmp
-        
-        cho "\n\n\nlist files in /tmp/mysql-files:"
-        ls -l /tmp/mysql-files
+
+        echo ""
+        echo ""
+        echo "which mysql:"
+        which mysql
     - name: Run tests
       env:
         DATABASE_NAME: testdb
