@@ -78,9 +78,9 @@ jobs:
 
         echo
         echo
-        cat /etc/my.cnf
-        sudo echo '[mysqld] secure_file_priv = "/usr/local/”' > /etc/my.cnf
-        sudo echo '[mysqld] secure_file_priv = "/usr/local/”' > /etc/mysql/my.cnf
+        #cat /etc/my.cnf
+        #sudo echo '[mysqld] secure_file_priv = "/usr/local/”' > /etc/my.cnf
+        #sudo echo '[mysqld] secure_file_priv = "/usr/local/”' > /etc/mysql/my.cnf
 
 
     - name: Run tests
