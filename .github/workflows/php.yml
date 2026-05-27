@@ -68,7 +68,7 @@ jobs:
 
         echo ""
         echo "list files in /tmp/data:"
-        ls /tmp/data
+        ls -la /tmp/data
         
         echo ""
         echo ""
