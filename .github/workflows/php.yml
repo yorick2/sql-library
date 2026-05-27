@@ -69,7 +69,7 @@ jobs:
         ls /tmp/data
         
         echo "\n\n\nlist files in /tmp:"
-        li -l /tmp
+        ls -la /tmp
         
         cho "\n\n\nlist files in /tmp/mysql-files:"
         ls -l /tmp/mysql-files
