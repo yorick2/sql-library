@@ -66,12 +66,12 @@ jobs:
         echo "Test data copied to /tmp/data"
         echo
         echo
-        echo "ls -l /var/lib"
-        ls -l /var/lib
+        echo "sudo ls -l /var/lib"
+        sudo ls -l /var/lib
         echo
         echo
-        echo "ls /var/lib/mysql-files"
-        ls -l /var/lib/mysql-files
+        echo "sudo ls /var/lib/mysql-files"
+        sudo ls -l /var/lib/mysql-files
 #        sudo chown -R 1000:1000 /tmp/data
 #               
 #
