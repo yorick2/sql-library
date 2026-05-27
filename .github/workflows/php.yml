@@ -19,11 +19,10 @@ jobs:
         env:
           MYSQL_DATABASE: test
           MYSQL_ROOT_PASSWORD: testrootpass
-          MYSQL_SECURE_FILE: /var/lib/mysql-files/data
         ports:
           - 3306:3306
         volumes:
-          - './tests/data/*:/var/lib/mysql-files/data'
+          - './tests/data:/var/lib/mysql-files/data'
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
