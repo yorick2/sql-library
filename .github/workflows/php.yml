@@ -60,7 +60,10 @@ jobs:
           echo 'Waiting for MySQL...'
           sleep 1
         done
-        
+
+
+        echo '"ls ${{ github.workspace }}/tests/data" :'
+        ls ${{ github.workspace }}/tests/data
         # Create directory in MySQL container and copy test data
 #        sudo cp tests/mysql-files/* /var/lib/mysql-files/data
 #        sudo chown -R mysql:mysql /var/lib/mysql-files/data
