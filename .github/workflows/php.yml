@@ -60,8 +60,7 @@ jobs:
         done
         
         # Create directory in MySQL container and copy test data
-        mkdir -p /tmp/data
-        cp tests/data/* /var/lib/mysql-files
+        cp tests/mysql-files/* /var/lib/mysql-files
         echo "Test data copied to /var/lib/mysql-files"
 #        echo
 #        echo
