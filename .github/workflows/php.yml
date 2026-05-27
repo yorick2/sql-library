@@ -19,7 +19,7 @@ jobs:
         env:
           MYSQL_DATABASE: testdb
           MYSQL_ROOT_PASSWORD: testrootpass
-          MYSQL_SECURE_FILE_PRIV: /tmp
+          MYSQL_SECURE_FILE_PRIV: /tmp/data
         ports:
           - 3306:3306
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
@@ -64,6 +64,14 @@ jobs:
         mkdir -p /tmp/data
         cp tests/data/* /tmp/data
         echo "Test data copied to /tmp/data"
+        echo
+        echo
+        echo "ls -l /var/lib"
+        ls -l /var/lib
+        echo
+        echo
+        echo "ls /var/lib/mysql-files"
+        ls -l /var/lib/mysql-files
 #        sudo chown -R 1000:1000 /tmp/data
 #               
 #
