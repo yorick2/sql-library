@@ -2,9 +2,9 @@ name: run tests
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master", "create-workflow" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "master", "create-workflow" ]
 
 permissions:
   contents: read
