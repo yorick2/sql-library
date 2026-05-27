@@ -63,10 +63,14 @@ jobs:
         sudo cp tests/mysql-files/* /var/lib/mysql-files
         sudo chown -R mysql:mysql /var/lib/mysql-files
         echo "Test data copied to /var/lib/mysql-files"
-#        echo
-#        echo
-#        echo "sudo ls -l /var/lib"
-#        sudo ls -l /var/lib
+        echo
+        echo
+        echo "sudo ls -l /var/lib"
+        sudo ls -l /var/lib
+        echo
+        echo
+        echo "sudo ls -l /var/lib/mysql-files"
+        sudo ls -l /var/lib/mysql-files
 #        echo
 #        echo
 #        echo "sudo ls /var/lib/mysql-files"
