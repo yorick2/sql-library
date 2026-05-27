@@ -65,6 +65,7 @@ jobs:
         
         echo "Test data copied to /tmp/data"
 
+        ls /tmp/data
     - name: Run tests
       env:
         DATABASE_NAME: testdb
