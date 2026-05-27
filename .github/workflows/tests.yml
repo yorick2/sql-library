@@ -33,7 +33,7 @@ jobs:
 
       - name: Validate composer.json and composer.lock
         run: composer validate --strict
-        id: composer-cache
+        id: composer-validate
 
       - name: Cache Composer packages
         id: composer-cache
@@ -48,20 +48,3 @@ jobs:
         run: composer install --prefer-dist --no-progress
       - name: Run test suite
         run: composer run-script test
-
-      - name: Execute tests
-        run: vendor/bin/phpunit
-        env:
-          DB_PORT: ${{ job.services.mysql.ports[3306] }}
-
-
-
-services:
-  mysql:
-    image: mysql:5.7
-    env:
-      MYSQL_ALLOW_EMPTY_PASSWORD: yes
-      MYSQL_DATABASE: laravel_tags
-    ports:
-      - 3306
-    options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
