@@ -63,26 +63,24 @@ jobs:
         # Create directory in MySQL container and copy test data
         mkdir -p /tmp/data
         cp tests/data/* /tmp/data
-        sudo chown -R 1000:1000 /tmp/data
-               
-        echo "Test data copied to /tmp/data"
-
-        echo ""
-        echo "list files in /tmp/data:"
-        ls -la /tmp/data
-        
-        echo ""
-        echo ""
-        echo "list files in /tmp:"
-        ls -la /tmp
-
-        echo
-        echo
-        #cat /etc/my.cnf
-        #sudo echo '[mysqld] secure_file_priv = "/usr/local/”' > /etc/my.cnf
-        #sudo echo '[mysqld] secure_file_priv = "/usr/local/”' > /etc/mysql/my.cnf
-
-
+#        sudo chown -R 1000:1000 /tmp/data
+#               
+#        echo "Test data copied to /tmp/data"
+#
+#        echo ""
+#        echo "list files in /tmp/data:"
+#        ls -la /tmp/data
+#        
+#        echo ""
+#        echo ""
+#        echo "list files in /tmp:"
+#        ls -la /tmp
+#
+#        echo
+#        echo
+#        cat /etc/my.cnf
+#        sudo echo '[mysqld] secure_file_priv = "/usr/local/”' > /etc/my.cnf
+#        sudo echo '[mysqld] secure_file_priv = "/usr/local/”' > /etc/mysql/my.cnf
     - name: Run tests
       env:
         DATABASE_NAME: testdb
