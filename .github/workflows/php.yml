@@ -75,6 +75,11 @@ jobs:
         echo "list files in /tmp:"
         ls -la /tmp
 
+        echo
+        echo
+        echo my.cnf
+        cat my.cnf
+
     - name: Run tests
       env:
         DATABASE_NAME: testdb
