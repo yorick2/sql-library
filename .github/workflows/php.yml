@@ -22,6 +22,8 @@ jobs:
           MYSQL_SECURE_FILE: /var/lib/mysql-files
         ports:
           - 3306:3306
+        volumes:
+          - './tests/mysql-files/:/var/lib/mysql-files/'
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
