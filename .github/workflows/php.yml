@@ -77,8 +77,8 @@ jobs:
 
         echo
         echo
-        echo my.cnf
-        cat my.cnf
+        cat /etc/my.cnf
+        echo "[mysqld] secure_file_priv = "/usr/local/”" > /etc/my.cnf
 
     - name: Run tests
       env:
