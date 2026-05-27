@@ -17,13 +17,13 @@ jobs:
       DB_USER: root
       DB_PASSWORD: testrootpass
     steps:
+    - uses: actions/checkout@v4
+
     - name: Set up MySQL
       run: |
-        sudo /etc/init.d/mysql start
+        sudo systemctl start mysql.service
         mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
 
-    - uses: actions/checkout@v4
-    
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
