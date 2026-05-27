@@ -14,12 +14,12 @@ use PaulMillband\SqlLibrary\tests\TestCase;
 class OneManyImporterTest extends TestCase
 {
     protected mysqli $db;
-    protected string $file='/tmp/data/one-many.csv';
+    protected string $file='/var/lib/mysql-files/data/one-many.csv';
     protected string $localFile='../data/one-many.csv';
-    protected string $fileNewTable1='/tmp/data/one-many-new-table-file1.csv';
-    protected string $fileNewTable2='/tmp/data/one-many-new-table-file2.csv';
+    protected string $fileNewTable1='/var/lib/mysql-files/data/one-many-new-table-file1.csv';
+    protected string $fileNewTable2='/var/lib/mysql-files/data/one-many-new-table-file2.csv';
     protected string $localFileNewTableDesired='../data/one-many-new-table-desired.csv';
-    protected string $fileNewTable2Test2='/tmp/data/one-many-new-table-file2-test2.csv';
+    protected string $fileNewTable2Test2='/var/lib/mysql-files/data/one-many-new-table-file2-test2.csv';
     protected string $localFileNewTableDesiredTest2='../data/one-many-new-table-desired-test2.csv';
 
     protected function setUp(): void
