@@ -73,4 +73,8 @@ jobs:
         DATABASE_USERNAME: root          
         DATABASE_PASSWORD: testrootpass          
         DATABASE_ENDPOINT: 127.0.0.1
-      run: vendor/bin/phpunit tests
+      run: |
+        echo "list files in /tmp/data:"
+        ls /tmp/data
+        
+        vendor/bin/phpunit tests
