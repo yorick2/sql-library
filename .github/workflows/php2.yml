@@ -44,60 +44,71 @@ jobs:
     - name: Install dependencies
       run: composer install --prefer-dist --no-progress
 
-    - name: Wait for MySQL and setup test data
+#    - name: Wait for MySQL and setup test data
+#      env:
+#        DATABASE_NAME: test
+#        DATABASE_USERNAME: root
+#        DATABASE_PASSWORD: root
+#        DATABASE_ENDPOINT: 127.0.0.1
+#      run: |
+#        # Wait for MySQL to be ready
+#        until mysqladmin ping -h 127.0.0.1 -u root -proot --silent; do
+#          echo 'Waiting for MySQL...'
+#          sleep 1
+#        done
+#
+#
+#        echo '"ls ${{ github.workspace }}/tests/data" :'
+#        ls ${{ github.workspace }}/tests/data
+#        # Create directory in MySQL container and copy test data
+##        sudo cp tests/mysql-files/* /var/lib/mysql-files
+##        sudo chown -R mysql:mysql /var/lib/mysql-files
+##        echo "Test data copied to /var/lib/mysql-files"
+##        echo
+##        echo
+##        echo "sudo ls -l /var/lib"
+##        sudo ls -l /var/lib
+##        echo
+##        echo
+##        echo "sudo ls -l /var/lib/mysql-files"
+##        sudo ls -l /var/lib/mysql-files
+##        echo
+##        echo
+#        # echo "sudo ls /var/lib/mysql-files"
+#        # sudo ls -l /var/lib/mysql-files
+#        # sudo chown -R 1000:1000 /var/lib/mysql-files
+#
+#
+#        # echo ""
+#        # echo "list files in /var/lib/mysql-files:"
+#        # ls -la /var/lib/mysql-files
+#
+#        # echo ""
+#        # echo ""
+#        # echo "list files in /tmp:"
+#        # ls -la /tmp
+#
+#        # echo
+#        # echo
+#        # cat /etc/my.cnf
+#        # sudo echo '[mysqld] secure_file_priv = "/var/lib/mysql-files”' > /etc/my.cnf
+#        # sudo echo '[mysqld] secure_file_priv = "/var/lib/mysql-files”' > /etc/mysql/my.cnf
+
+
+    - name: Copy import files for mysql
       env:
         DATABASE_NAME: test
-        DATABASE_USERNAME: root          
+        DATABASE_USERNAME: root
         DATABASE_PASSWORD: root
         DATABASE_ENDPOINT: 127.0.0.1
       run: |
-        # Wait for MySQL to be ready
-        until mysqladmin ping -h 127.0.0.1 -u root -proot --silent; do
-          echo 'Waiting for MySQL...'
-          sleep 1
-        done
+        sudo cp tests/data/* /var/lib/mysql-files
 
-
-        echo '"ls ${{ github.workspace }}/tests/data" :'
-        ls ${{ github.workspace }}/tests/data
-        # Create directory in MySQL container and copy test data
-#        sudo cp tests/mysql-files/* /var/lib/mysql-files/data
-#        sudo chown -R mysql:mysql /var/lib/mysql-files/data
-#        echo "Test data copied to /var/lib/mysql-files/data"
-#        echo
-#        echo
-#        echo "sudo ls -l /var/lib"
-#        sudo ls -l /var/lib
-#        echo
-#        echo
-#        echo "sudo ls -l /var/lib/mysql-files/data"
-#        sudo ls -l /var/lib/mysql-files/data
-#        echo
-#        echo
-        # echo "sudo ls /var/lib/mysql-files/data"
-        # sudo ls -l /var/lib/mysql-files/data
-        # sudo chown -R 1000:1000 /var/lib/mysql-files/data
-               
-
-        # echo ""
-        # echo "list files in /var/lib/mysql-files/data:"
-        # ls -la /var/lib/mysql-files/data
-        
-        # echo ""
-        # echo ""
-        # echo "list files in /tmp:"
-        # ls -la /tmp
-
-        # echo
-        # echo
-        # cat /etc/my.cnf
-        # sudo echo '[mysqld] secure_file_priv = "/var/lib/mysql-files/data”' > /etc/my.cnf
-        # sudo echo '[mysqld] secure_file_priv = "/var/lib/mysql-files/data”' > /etc/mysql/my.cnf
     - name: Run tests
       env:
         DATABASE_NAME: test
-        DATABASE_USERNAME: root          
+        DATABASE_USERNAME: root
         DATABASE_PASSWORD: root
         DATABASE_ENDPOINT: 127.0.0.1
-      run: |       
+      run: |
         vendor/bin/phpunit tests

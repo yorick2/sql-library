@@ -66,26 +66,26 @@ jobs:
         ls ${{ github.workspace }}/tests/data
         # Create directory in MySQL container and copy test data
 #        sudo cp tests/mysql-files/* /var/lib/mysql-files/data
-#        sudo chown -R mysql:mysql /var/lib/mysql-files/data
-#        echo "Test data copied to /var/lib/mysql-files/data"
+#        sudo chown -R mysql:mysql /var/lib/mysql-files
+#        echo "Test data copied to /var/lib/mysql-files"
 #        echo
 #        echo
 #        echo "sudo ls -l /var/lib"
 #        sudo ls -l /var/lib
 #        echo
 #        echo
-#        echo "sudo ls -l /var/lib/mysql-files/data"
-#        sudo ls -l /var/lib/mysql-files/data
+#        echo "sudo ls -l /var/lib/mysql-files"
+#        sudo ls -l /var/lib/mysql-files
 #        echo
 #        echo
-        # echo "sudo ls /var/lib/mysql-files/data"
-        # sudo ls -l /var/lib/mysql-files/data
-        # sudo chown -R 1000:1000 /var/lib/mysql-files/data
+        # echo "sudo ls /var/lib/mysql-files"
+        # sudo ls -l /var/lib/mysql-files
+        # sudo chown -R 1000:1000 /var/lib/mysql-files
                
 
         # echo ""
-        # echo "list files in /var/lib/mysql-files/data:"
-        # ls -la /var/lib/mysql-files/data
+        # echo "list files in /var/lib/mysql-files:"
+        # ls -la /var/lib/mysql-files
         
         # echo ""
         # echo ""
@@ -95,8 +95,8 @@ jobs:
         # echo
         # echo
         # cat /etc/my.cnf
-        # sudo echo '[mysqld] secure_file_priv = "/var/lib/mysql-files/data”' > /etc/my.cnf
-        # sudo echo '[mysqld] secure_file_priv = "/var/lib/mysql-files/data”' > /etc/mysql/my.cnf
+        # sudo echo '[mysqld] secure_file_priv = "/var/lib/mysql-files”' > /etc/my.cnf
+        # sudo echo '[mysqld] secure_file_priv = "/var/lib/mysql-files”' > /etc/mysql/my.cnf
     - name: Run tests
       env:
         DATABASE_NAME: test

@@ -18,14 +18,14 @@ class ManyManyImporterTest extends TestCase
     protected string $localFileComplex = '../data/many-many-complex.tsv';
     protected string $localFileComplexDesired = '../data/many-many-complex-desired.tsv';
     protected string $localFileComplexDesired2 = '../data/many-many-complex-desired2.tsv';
-    protected string $fileSimple = '/var/lib/mysql-files/data/many-many-simple.tsv';
-    protected string $fileComplex = '/var/lib/mysql-files/data/many-many-complex.tsv';
-    protected string $fileComplex1 = '/var/lib/mysql-files/data/many-many-complex-1.tsv';
-    protected string $fileComplex2 = '/var/lib/mysql-files/data/many-many-complex-2.tsv';
-    protected string $fileComplex3 = '/var/lib/mysql-files/data/many-many-complex-3.tsv';
-    protected string $fileComplex4 = '/var/lib/mysql-files/data/many-many-complex-4.tsv';
-    protected string $fileComplexPivot = '/var/lib/mysql-files/data/many-many-complex-pivot.tsv';
-    protected string $fileComplexPivot2 = '/var/lib/mysql-files/data/many-many-complex-pivot2.tsv';
+    protected string $fileSimple = '/var/lib/mysql-files/many-many-simple.tsv';
+    protected string $fileComplex = '/var/lib/mysql-files/many-many-complex.tsv';
+    protected string $fileComplex1 = '/var/lib/mysql-files/many-many-complex-1.tsv';
+    protected string $fileComplex2 = '/var/lib/mysql-files/many-many-complex-2.tsv';
+    protected string $fileComplex3 = '/var/lib/mysql-files/many-many-complex-3.tsv';
+    protected string $fileComplex4 = '/var/lib/mysql-files/many-many-complex-4.tsv';
+    protected string $fileComplexPivot = '/var/lib/mysql-files/many-many-complex-pivot.tsv';
+    protected string $fileComplexPivot2 = '/var/lib/mysql-files/many-many-complex-pivot2.tsv';
 
     protected function setUp(): void
     {
