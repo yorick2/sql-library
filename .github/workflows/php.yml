@@ -17,7 +17,7 @@ jobs:
       mysql:
         image: mysql:9.7
         env:
-          MYSQL_DATABASE: testdb
+          MYSQL_DATABASE: test
           MYSQL_ROOT_PASSWORD: testrootpass
           MYSQL_SECURE_FILE: /var/lib/mysql-files
         ports:
@@ -49,7 +49,7 @@ jobs:
 
     - name: Wait for MySQL and setup test data
       env:
-        DATABASE_NAME: testdb
+        DATABASE_NAME: test
         DATABASE_USERNAME: root          
         DATABASE_PASSWORD: testrootpass          
         DATABASE_ENDPOINT: 127.0.0.1
@@ -95,7 +95,7 @@ jobs:
         # sudo echo '[mysqld] secure_file_priv = "/var/lib/mysql-files”' > /etc/mysql/my.cnf
     - name: Run tests
       env:
-        DATABASE_NAME: testdb
+        DATABASE_NAME: test
         DATABASE_USERNAME: root          
         DATABASE_PASSWORD: testrootpass          
         DATABASE_ENDPOINT: 127.0.0.1
