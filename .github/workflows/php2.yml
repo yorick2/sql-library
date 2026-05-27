@@ -15,7 +15,7 @@ jobs:
     env:
       DB_DATABASE: test
       DB_USER: root
-      DB_PASSWORD: testrootpass
+      DB_PASSWORD: root
     steps:
     - uses: actions/checkout@v4
 
@@ -48,11 +48,11 @@ jobs:
       env:
         DATABASE_NAME: test
         DATABASE_USERNAME: root          
-        DATABASE_PASSWORD: testrootpass          
+        DATABASE_PASSWORD: root
         DATABASE_ENDPOINT: 127.0.0.1
       run: |
         # Wait for MySQL to be ready
-        until mysqladmin ping -h 127.0.0.1 -u root -ptestrootpass --silent; do
+        until mysqladmin ping -h 127.0.0.1 -u root -proot --silent; do
           echo 'Waiting for MySQL...'
           sleep 1
         done
@@ -97,7 +97,7 @@ jobs:
       env:
         DATABASE_NAME: test
         DATABASE_USERNAME: root          
-        DATABASE_PASSWORD: testrootpass          
+        DATABASE_PASSWORD: root
         DATABASE_ENDPOINT: 127.0.0.1
       run: |       
         vendor/bin/phpunit tests
