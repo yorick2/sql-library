@@ -104,6 +104,10 @@ jobs:
       run: |
         sudo cp tests/data/* /var/lib/mysql-files
 
+    - name: Copy php .env file
+      run: |
+        cp .github/workflows/.env .env
+
     - name: Run tests
       env:
         DATABASE_NAME: test
