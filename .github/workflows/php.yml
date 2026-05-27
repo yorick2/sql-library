@@ -62,8 +62,8 @@ jobs:
         # Create directory in MySQL container and copy test data
         mkdir -p /tmp/data
         cp tests/data/* /tmp/data
-        sudo chown -R mysql:mysql /tmp/data
-        
+        chown -R 1000:1000 /tmp/data
+               
         echo "Test data copied to /tmp/data"
 
         echo ""
@@ -75,10 +75,6 @@ jobs:
         echo "list files in /tmp:"
         ls -la /tmp
 
-        echo ""
-        echo ""
-        echo "which mysql:"
-        which mysql
     - name: Run tests
       env:
         DATABASE_NAME: testdb
