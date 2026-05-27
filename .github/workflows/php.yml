@@ -22,7 +22,7 @@ jobs:
         ports:
           - 3306:3306
         volumes:
-          - ${{ github.workspace }}/tests/data:/var/lib/mysql-files/data
+          - ${{ github.workspace }}/tests/data/simple.tsv:/var/lib/mysql-files/data/simple.tsv
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
     steps:
