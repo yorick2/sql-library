@@ -107,19 +107,52 @@ src/Importer/ManyManyImporter.php   import 2 tables of data in a csv, linked by 
 - getSqlText() : generate SQL to import a simple 1-1 
 - getPivotTableImportSqlText() : generate SQL to import pivot table
 
-
 ## Reducers
 Delete rows from 2 tables linked together, leaving the defined qty of rows. Leaving valid linked data.
 src/reducer/OneManyImporter.php 
 src/reducer/ManyManyImporter.php
 
+## Editors
+src/Editor/ManyManyDatabaseEditor.php
+getSetColumnValueAsLastValueIfNotSetSqlTriggerText() :
+getSetColumnValueAsLastValueWhenNotSetSqlText() :
+getSplitRecordsWithCommasSqlText() :
+getSplitRecordsWithCharacterSqlText() :
+getSplitRecordsWithMultipleColumnsSqlText() :
+getReassignAndRemoveDuplicatesSqlText() :
+
+src/Editor/SimpleDatabaseEditor.php
+getSetColumnValueAsLastValueIfNotSetSqlTriggerText() :
+getSetColumnValueAsLastValueWhenNotSetSqlText() :
+getTriggerSqlText() :
+getTriggerIfElseSqlText() :
+getSplitRecordsWithCommasSqlText() :
+getSplitRecordsWithMultipleCommaColumnsSqlText() :
+getSplitRecordsWithCharacterSqlText() :
+getSplitRecordsWithMultipleCharacterColumnsSqlText() :
+getRemoveLaterDuplicatesSqlText() :
+
+## Misc Classes
+src/misc/Files.php
+getMissingFilesFromSqlServer() : get files from a given list missing from a server
+
+src/misc/Looper.php
+getWhileLoopSqlText() : returns a sql while loop
+
+src/misc/mix.php
+getTableColumnsSqlText() : get columns for a given table
+getTableColumnNamesStringExcluding() : get columns for a table without including a given set of tables
+getSelectAllWhereInArrayWithDuplicatesSqlText() : give a selection with all results for a given set of columns and values
+getInsertAllWhereInArrayWithDuplicatesSqlText() : insert the values from the result of a selection, with all results for a given set of columns and values
+getAllDuplicatesForColumnsSqlText() : get rows where they are duplicates of another row, for the given columns
+
 ## Testing
 ### native
 add test files to a native setup for sql to import during tests
-cp "<<path to repo>>/tests/data" /tmp
+cp "<<path to repo>>/tests/data" /var/lib/mysql-files/
 
 ### Docker
 add test files to docker sql instance to import during tests
-docker cp "<<path to repo>>/tests/data" /tmp
+docker cp "<<path to repo>>/tests/data" /var/lib/mysql-files
 e.g.
-docker cp "<<path to repo>>/tests/data" mysql_1:/tmp
+docker cp "<<path to repo>>/tests/data" mysql_1:/var/lib/mysql-files

@@ -14,7 +14,7 @@ class SimpleImporterTest extends TestCase
 {
     protected mysqli $db;
     protected string $localFile = '../data/simple.tsv';
-    protected string $file = '/var/lib/mysql-files/simple.tsv';
+    protected string $file = '/var/lib/mysql-files/data/simple.tsv';
 
     protected function setUp(): void
     {
@@ -58,7 +58,7 @@ SQL;
         $query = SimpleImporter::getSqlText(
             'table1',
             $this->file,
-            '`text1`,`text1b`,`text1c`',
+            ['text1','text1b','text1c'],
         );
         $result = $this->db->multi_query($query);
         // do not remove. multi_query needs this to allow next query to run

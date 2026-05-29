@@ -9,7 +9,7 @@ class SimpleImporter
      *
      * @param string $table e.g. 'table1'
      * @param string $filePath file path e.g. '__DIR__./src/test.tsv'
-     * @param string $fileColumns e.g. 'column1,column2'
+     * @param array $fileColumnsArray e.g. ['column1','column2']
      * @param int $ignoreLinesQty how many rows to ignore from table
      * @param string $fileDelimiter e.g. '\t'
      * @param string $additionalFileImportCommand e.g. "set simple = REGEXP_REPLACE(Word,'[1234]*','')"
@@ -18,12 +18,13 @@ class SimpleImporter
     static function getSqlText(
         string $table,
         string $filePath,
-        string $fileColumns,
+        array $fileColumnsArray,
         int    $ignoreLinesQty = 0,
         string $fileDelimiter = '\t',
         string $additionalFileImportCommand = ''
     )
     {
+        $fileColumnsString='`'.implode('`,`', $fileColumnsArray).'`';
         $ignoreLinesText = '';
         if ($ignoreLinesQty) {
             $ignoreLinesText = "IGNORE $ignoreLinesQty LINES\n";
@@ -32,7 +33,7 @@ class SimpleImporter
             LOAD DATA INFILE '$filePath'
             IGNORE INTO TABLE `$table`
             FIELDS TERMINATED BY '$fileDelimiter'
-            $ignoreLinesText($fileColumns)
+            $ignoreLinesText($fileColumnsString)
             $additionalFileImportCommand;
 SQL;
     }

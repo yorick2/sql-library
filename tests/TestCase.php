@@ -14,7 +14,7 @@ class TestCase extends PHPUnitTestCase
             ->query("Show tables")
             ->fetch_all( MYSQLI_ASSOC);
         foreach ($result as $row) {
-            $this->assertNotEquals('temp', $row['Tables_in_test']);
+            $this->assertNotEquals('temp', $row['Tables_in_test'], 'temp table still exists');
         }
         parent::tearDown();
     }

@@ -131,7 +131,7 @@ SQL;
     /**
      * @param string $table
      * @param string $tableColumnToSplit
-     * @param string $remainingColumnsInTable e.g. '`table1_id`,`text2b`'
+     * @param array $remainingColumnsInTable e.g. ['table1_id','text2b']
      * @param string $additionalLoopCommand
      * @param string $tempTable
      * @param int $maxIterations
@@ -140,7 +140,7 @@ SQL;
     static function getSplitRecordsWithCommasSqlText(
         string $table,
         string $tableColumnToSplit,
-        string $remainingColumnsInTable,
+        array $remainingColumnsInTable,
         string $additionalLoopCommand = '',
         string $tempTable = 'temp',
         int    $maxIterations = 10000
@@ -166,7 +166,7 @@ SQL;
      *
      * @param string $table
      * @param array $tableMultipleColumnsToSplit e.g. ['column1','column2','column3',...]
-     * @param string $remainingColumnsInTable e.g. '`table1_id`,`text2b`'
+     * @param array $remainingColumnsInTable e.g. ['table1_id','text2b']
      * @param string $additionalLoopCommand
      * @param string $tempTable
      * @param int $maxIterations
@@ -175,7 +175,7 @@ SQL;
     static function getSplitRecordsWithMultipleCommaColumnsSqlText(
         string $table,
         array $tableMultipleColumnsToSplit,
-        string $remainingColumnsInTable,
+        array $remainingColumnsInTable,
         string $additionalLoopCommand = '',
         string $tempTable = 'temp',
         int    $maxIterations = 10000
@@ -195,7 +195,7 @@ SQL;
     /**
      * @param string $table
      * @param string $tableColumnToSplit
-     * @param string $remainingColumnsInTable e.g. '`table1_id`,`text2b`'
+     * @param array $remainingColumnsInTable e.g. ['table1_id','text2b']
      * @param string $character the character to split with
      * @param string $additionalLoopCommand
      * @param string $tempTable
@@ -205,13 +205,14 @@ SQL;
     static function getSplitRecordsWithCharacterSqlText(
         string $table,
         string $tableColumnToSplit,
-        string $remainingColumnsInTable,
+        array  $remainingColumnsInTable,
         string $character = ',',
         string $additionalLoopCommand = '',
         string $tempTable = 'temp',
         int    $maxIterations = 10000
     ): string
     {
+        $remainingColumnsInTableString='`'.implode('`,`', $remainingColumnsInTable).'`';
         $query=<<<SQL
         DROP TABLE IF EXISTS `$tempTable`;
 
@@ -231,9 +232,9 @@ SQL;
                     # infinite loop safeguard
                     SET i = i + 1;
                     # add first word in each row to the word
-                    INSERT INTO `$table` (`$tableColumnToSplit`, $remainingColumnsInTable)
+                    INSERT INTO `$table` (`$tableColumnToSplit`, $remainingColumnsInTableString)
                         SELECT REGEXP_REPLACE(`$tableColumnToSplit`,'^.*$character',''),
-                               $remainingColumnsInTable
+                               $remainingColumnsInTableString
                         FROM `$tempTable`
                         WHERE `$tableColumnToSplit` LIKE '%$character%';
                     # remove current word
@@ -253,9 +254,9 @@ SET `$tableColumnToSplit` = REGEXP_REPLACE(`$tableColumnToSplit`,'{$character}[^
         DROP PROCEDURE IF EXISTS temp_insert_split_by_comma;
 
         # insert the last item in the comma seperated list
-        INSERT INTO `$table` (`$tableColumnToSplit`, $remainingColumnsInTable)
+        INSERT INTO `$table` (`$tableColumnToSplit`, $remainingColumnsInTableString)
             SELECT `$tableColumnToSplit`,
-                    $remainingColumnsInTable
+                    $remainingColumnsInTableString
             FROM `$tempTable` as t;
 
         # remove the original comma listed rows
@@ -276,7 +277,7 @@ SQL;
      *
      * @param string $table
      * @param array $tableMultipleColumnsToSplit e.g. ['column1','column2','column3',...]
-     * @param string $remainingColumnsInTable e.g. '`table1_id`,`text2b`'
+     * @param array $remainingColumnsInTable e.g. ['table1_id','text2b']
      * @param string $additionalLoopCommand
      * @param string $tempTable
      * @param int $maxIterations
@@ -284,8 +285,8 @@ SQL;
      */
     static function getSplitRecordsWithMultipleCharacterColumnsSqlText(
         string $table,
-        array $tableMultipleColumnsToSplit,
-        string $remainingColumnsInTable,
+        array  $tableMultipleColumnsToSplit,
+        array  $remainingColumnsInTable,
         string $character = ',',
         string $additionalLoopCommand = '',
         string $tempTable = 'temp',
@@ -293,6 +294,7 @@ SQL;
     ): string
     {
         $tableMultipleColumnsToSplitString = '`'.implode('`,`', $tableMultipleColumnsToSplit).'`';
+        $remainingColumnsInTableString = '`'.implode('`,`', $remainingColumnsInTable).'`';
         $query = <<<SQL
         DROP TABLE IF EXISTS `$tempTable`;
 
@@ -312,7 +314,7 @@ SQL;
                     # infinite loop safeguard
                     SET i = i + 1;
                     # add first word in each row to the word
-                        INSERT INTO `$table` ($tableMultipleColumnsToSplitString, $remainingColumnsInTable)
+                        INSERT INTO `$table` ($tableMultipleColumnsToSplitString, $remainingColumnsInTableString)
                         SELECT 
 SQL;
         for ($i = 0; $i < count($tableMultipleColumnsToSplit); $i++) {
@@ -320,7 +322,7 @@ SQL;
         }
 
         $query .= <<<SQL
-                               $remainingColumnsInTable
+                               $remainingColumnsInTableString
                         FROM `$tempTable`
                         WHERE `$tableMultipleColumnsToSplit[0]` LIKE '%$character%';
                         # remove current word
@@ -343,9 +345,9 @@ SQL;
         DROP PROCEDURE IF EXISTS temp_insert_split_by_comma;
 
         # insert the last item in the comma seperated list
-        INSERT INTO `$table` ($tableMultipleColumnsToSplitString, $remainingColumnsInTable)
+        INSERT INTO `$table` ($tableMultipleColumnsToSplitString, $remainingColumnsInTableString)
             SELECT $tableMultipleColumnsToSplitString,
-                    $remainingColumnsInTable
+                    $remainingColumnsInTableString
             FROM `$tempTable` as t;
         # remove the original comma listed rows
         DELETE FROM `$table`
@@ -359,31 +361,32 @@ SQL;
     /**
      * remove rows where a previous row (by $orderColumn) has the same value for a given column
      * @param string $table
-     * @param string $column
+     * @param array $searchColumns
      * @param string $orderColumn
      * @param bool $orderAscending
      * @return string
      */
     static function getRemoveLaterDuplicatesSqlText(
         string $table,
-        string $column,
+        array  $searchColumns,
         string $orderColumn='id',
-        bool $orderAscending=true
+        bool   $orderAscending=true
     ){
+        $sign='<';
         if($orderAscending){
-            return <<<SQL
-                DELETE FROM `$table` USING `$table`,
-                    `$table` e1
-                WHERE `$table`.`$orderColumn` > e1.`$orderColumn`
-                    AND `$table`.`$column` = e1.`$column`;
+            $sign='>';
+        }
+        $query=<<<SQL
+            DELETE FROM `$table` USING `$table`,
+                `$table` e1
+            WHERE `$table`.`$orderColumn` $sign e1.`$orderColumn`
+SQL;
+        for ($i = 0; $i < count($searchColumns); $i++) {
+            $query.=<<<SQL
+            AND `$table`.`$searchColumns[$i]` = e1.`$searchColumns[$i]`;
 SQL;
         }
-        return <<<SQL
-                DELETE FROM `$table` USING `$table`,
-                    `$table` e1
-                WHERE `$table`.`$orderColumn` > e1.`$orderColumn`
-                    AND `$table`.`$column` = e1.`$column`;
-SQL;
+        return $query;
     }
 
 }

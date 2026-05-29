@@ -14,21 +14,21 @@ use PaulMillband\SqlLibrary\Importer\SimpleImporter;
 class SimpleDatabaseEditorTest extends TestCase
 {
     protected mysqli $db;
-    protected string $file = '/var/lib/mysql-files/simple.tsv';
-    protected string $fileCommaColumn = '/var/lib/mysql-files/editor-commas.tsv';
+    protected string $file = '/var/lib/mysql-files/data/simple.tsv';
+    protected string $fileCommaColumn = '/var/lib/mysql-files/data/editor-commas.tsv';
     protected string $localFileCommasDesired = '../data/editor-commas-desired.tsv';
-    protected string $fileCommaMultipleColumns = '/var/lib/mysql-files/editor-comma-multiple-columns.tsv';
+    protected string $fileCommaMultipleColumns = '/var/lib/mysql-files/data/editor-comma-multiple-columns.tsv';
     protected string $localFileCommaMultipleColumnsDesired = '../data/editor-comma-multiple-columns-desired.tsv';
-    protected string $fileCharacterColumn = '/var/lib/mysql-files/editor-character.tsv';
+    protected string $fileCharacterColumn = '/var/lib/mysql-files/data/editor-character.tsv';
     protected string $localFileCharacterDesired = '../data/editor-character-desired.tsv';
-    protected string $fileCharacterMultipleColumns = '/var/lib/mysql-files/editor-character-multiple-columns.tsv';
+    protected string $fileCharacterMultipleColumns = '/var/lib/mysql-files/data/editor-character-multiple-columns.tsv';
     protected string $localFileCharacterMultipleColumnsDesired = '../data/editor-character-multiple-columns-desired.tsv';
-    protected string $fileAsPrevious = '/var/lib/mysql-files/editor-set-column-as-previous.tsv';
+    protected string $fileAsPrevious = '/var/lib/mysql-files/data/editor-set-column-as-previous.tsv';
     protected string $localFileAsPreviousDesired = '../data/editor-set-column-as-previous-desired.tsv';
     protected string $localFileAsPreviousDescDesired = '../data/editor-set-column-as-previous-desc-desired.tsv';
     protected string $localFileTriggerDesired = '../data/editor-trigger-desired.tsv';
     protected string $localFileTriggerIfElseDesired = '../data/editor-trigger-if-else-desired.tsv';
-    protected string $fileRemoveLaterDuplicates = '/var/lib/mysql-files/editor-remove-later-duplicates.tsv';
+    protected string $fileRemoveLaterDuplicates = '/var/lib/mysql-files/data/editor-remove-later-duplicates.tsv';
     protected string $localFileRemoveLaterDuplicatesDesired = '../data/editor-remove-later-duplicates-desired.tsv';
 
     protected function setUp(): void
@@ -72,7 +72,7 @@ SQL;
         $query = SimpleImporter::getSqlText(
             $table,
             $this->fileCommaColumn,
-            '`text1`,`text1b`,`text1c`',
+            ['text1','text1b','text1c',]
         );
         $this->db->multi_query($query);
         while ($this->db->next_result()) {
@@ -82,7 +82,7 @@ SQL;
         $query = SimpleDatabaseEditor::getSplitRecordsWithCommasSqlText(
             $table,
             $splitCol,
-            '`text1`,`text1c`',
+            ['text1','text1c'],
             '',
             'temp',
             100
@@ -120,7 +120,7 @@ SQL;
         $query = SimpleImporter::getSqlText(
             $table,
             $this->fileCommaMultipleColumns,
-            '`text1`,`text1b`,`text1c`',
+            ['text1','text1b','text1c'],
         );
         $this->db->multi_query($query);
         while ($this->db->next_result()) {
@@ -130,7 +130,7 @@ SQL;
         $query = SimpleDatabaseEditor::getSplitRecordsWithMultipleCommaColumnsSqlText(
             $table,
             $splitCols,
-            '`text1`',
+            ['text1'],
             '',
             'temp',
             100
@@ -168,7 +168,7 @@ SQL;
         $query = SimpleImporter::getSqlText(
             $table,
             $this->fileCharacterColumn,
-            '`text1`,`text1b`,`text1c`',
+            ['text1','text1b','text1c'],
         );
         $this->db->multi_query($query);
         while ($this->db->next_result()) {
@@ -178,7 +178,7 @@ SQL;
         $query = SimpleDatabaseEditor::getSplitRecordsWithCharacterSqlText(
             $table,
             $splitCol,
-            '`text1`,`text1c`',
+            ['text1','text1c'],
             ';',
             '',
             'temp',
@@ -218,7 +218,7 @@ SQL;
         $query = SimpleImporter::getSqlText(
             $table,
             $this->fileCharacterMultipleColumns,
-            '`text1`,`text1b`,`text1c`',
+            ['text1','text1b','text1c'],
         );
         $this->db->multi_query($query);
         while ($this->db->next_result()) {
@@ -228,7 +228,7 @@ SQL;
         $query = SimpleDatabaseEditor::getSplitRecordsWithMultipleCharacterColumnsSqlText(
             $table,
             $splitCols,
-            '`text1`',
+            ['text1'],
             ';',
             '',
             'temp',
@@ -267,7 +267,7 @@ SQL;
         $query = SimpleImporter::getSqlText(
             $table,
             $this->fileAsPrevious,
-            '`text1`,`text1b`,`text1c`',
+            ['text1','text1b','text1c'],
         );
         $this->db->multi_query($query);
         while ($this->db->next_result()) {
@@ -304,7 +304,7 @@ SQL;
         $query = SimpleImporter::getSqlText(
             $table,
             $this->fileAsPrevious,
-            '`text1`,`text1b`,`text1c`',
+            ['text1','text1b','text1c'],
         );
         $this->db->multi_query($query);
         while ($this->db->next_result()) {
@@ -342,14 +342,14 @@ SQL;
         $query = SimpleImporter::getSqlText(
                 $table,
                 $this->fileRemoveLaterDuplicates,
-                '`text1`,`text1b`,`text1c`',
+                ['text1','text1b','text1c'],
                 1,
                 '\t',
                 ''
             )
             .SimpleDatabaseEditor::getRemoveLaterDuplicatesSqlText(
                 $table,
-                $duplicateColumn,
+                [$duplicateColumn],
                 'id',
                 true
             );
@@ -389,7 +389,7 @@ SQL;
             SimpleImporter::getSqlText(
                 $table,
                 $this->file,
-                '`text1`,`text1b`,`text1c`',
+                ['text1','text1b','text1c'],
             );
         $this->db->multi_query($query);
         while ($this->db->next_result()) {
@@ -420,7 +420,7 @@ SQL;
             SimpleImporter::getSqlText(
                 $table,
                 $this->file,
-                '`text1`,`text1b`,`text1c`',
+                ['text1','text1b','text1c'],
             );
         $this->db->multi_query($query);
         while ($this->db->next_result()) {

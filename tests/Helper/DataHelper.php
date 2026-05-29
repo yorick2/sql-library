@@ -20,12 +20,12 @@ class DataHelper
         }
         $returnArray=[];
         // do for the remaining data rows
-        for($i = 0; $i < count($data2); $i++) {
+        for($i = 2; $i < count($data2); $i++) {
             if (!self::checkDataRow($data1, $data2[$i], $keys)) {
                 if(!$findAll){
                     return $data2[$i];
                 }
-                $returnArray[]=$data2[$i];
+                array_push($returnArray, $data2[$i]);
             }
         }
         return $returnArray;

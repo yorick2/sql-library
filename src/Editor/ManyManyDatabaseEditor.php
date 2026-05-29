@@ -78,9 +78,9 @@ SQL;
      * @param string $linkCol
      * @param string $linkTable
      * @param string $linkTableLinkCol
-     * @param string $remainingColumnsInLinkTable
+     * @param array $remainingColumnsInLinkTable
      * @param string $tableColumnToSplit
-     * @param string $remainingColumnsInTable e.g. '`table1_id`,`text2b`'
+     * @param array $remainingColumnsInTable e.g. ['table1_id','text2b']
      * @param string $additionalLoopCommand
      * @param string $tempTable
      * @param int $maxIterations
@@ -91,9 +91,9 @@ SQL;
         string $linkCol,
         string $linkTable,
         string $linkTableLinkCol,
-        string $remainingColumnsInLinkTable,
+        array $remainingColumnsInLinkTable,
         string $tableColumnToSplit,
-        string $remainingColumnsInTable,
+        array $remainingColumnsInTable,
         string $additionalLoopCommand = '',
         string $tempTable = 'temp',
         int    $maxIterations = 10000
@@ -121,7 +121,7 @@ SQL;
      * @param string $linkTableLinkCol
      * @param string $remainingColumnsInLinkTable
      * @param string $tableColumnToSplit
-     * @param string $remainingColumnsInTable e.g. '`table1_id`,`text2b`'
+     * @param array $remainingColumnsInTableArray e.g. ['table1_id','text2b']
      * @param string $character the character to split with
      * @param string $additionalLoopCommand
      * @param string $tempTable
@@ -133,16 +133,18 @@ SQL;
         string $linkCol,
         string $linkTable,
         string $linkTableLinkCol,
-        string $remainingColumnsInLinkTable,
+        array  $remainingColumnsInLinkTableArray,
         string $tableColumnToSplit,
-        string $remainingColumnsInTable,
+        array  $remainingColumnsInTableArray,
         string $character = ',',
         string $additionalLoopCommand = '',
         string $tempTable = 'temp',
         int    $maxIterations = 10000
     ): string
     {
-        $query=<<<SQL
+        $remainingColumnsInTableString='`'.implode('`,`', $remainingColumnsInTableArray).'`';
+        $remainingColumnsInLinkTableString='`'.implode('`,`', $remainingColumnsInLinkTableArray).'`';
+        return<<<SQL
         ALTER TABLE `$table` ADD COLUMN `old_id` int;
 
         DROP TABLE IF EXISTS `$tempTable`;
@@ -158,8 +160,8 @@ SQL;
         AFTER INSERT ON `$table`
         FOR EACH ROW
         BEGIN
-              INSERT INTO `$linkTable` (`$linkTableLinkCol`, $remainingColumnsInLinkTable)
-                    SELECT new.$linkCol, $remainingColumnsInLinkTable
+              INSERT INTO `$linkTable` (`$linkTableLinkCol`, $remainingColumnsInLinkTableString)
+                    SELECT new.$linkCol, $remainingColumnsInLinkTableString
                     FROM `$linkTable`
                     WHERE `$linkTableLinkCol`=new.old_id;
         End;
@@ -174,8 +176,8 @@ SQL;
                     -- infinite loop safeguard
                     SET i = i + 1;
                     -- add first word in each row to the word
-                    INSERT INTO `$table` (`$tableColumnToSplit`, $remainingColumnsInTable,`old_id`)
-                        SELECT REGEXP_REPLACE(`$tableColumnToSplit`,'^.*$character',''), $remainingColumnsInTable, `id`
+                    INSERT INTO `$table` (`$tableColumnToSplit`, $remainingColumnsInTableString,`old_id`)
+                        SELECT REGEXP_REPLACE(`$tableColumnToSplit`,'^.*$character',''), $remainingColumnsInTableString, `id`
                         FROM `$tempTable`
                         WHERE `$tableColumnToSplit` LIKE '%$character%';
 
@@ -202,7 +204,6 @@ SQL;
         DROP TABLE IF EXISTS `$tempTable`;
         DROP TRIGGER IF EXISTS `updatePivotTable`;
 SQL;
-        return $query;
     }
 
     /**
@@ -210,9 +211,9 @@ SQL;
      * @param string $linkCol
      * @param string $linkTable
      * @param string $linkTableLinkCol
-     * @param string $remainingColumnsInLinkTable
+     * @param array $remainingColumnsInLinkTable
      * @param array $tableColumnsToSplitArray
-     * @param string $remainingColumnsInTable e.g. '`table1_id`,`text2b`'
+     * @param array $remainingColumnsInTableString
      * @param array $charactersArray the character to split with
      * @param string $additionalLoopCommand
      * @param string $tempTable
@@ -225,9 +226,9 @@ SQL;
         string $linkCol,
         string $linkTable,
         string $linkTableLinkCol,
-        string $remainingColumnsInLinkTable,
+        array $remainingColumnsInLinkTableArray,
         array  $tableColumnsToSplitArray,
-        string $remainingColumnsInTable,
+        array $remainingColumnsInTableArray,
         array  $charactersArray = [',',','],
         string $additionalLoopCommand = '',
         string $tempTable = 'temp',
@@ -237,6 +238,8 @@ SQL;
         if(count($tableColumnsToSplitArray) !== count($charactersArray)) {
             throw new \Exception('$charactersArray & $tableColumnsToSplitArray are different length');
         }
+        $remainingColumnsInLinkTableString='`'.implode('`,`', $remainingColumnsInLinkTableArray).'`';
+        $remainingColumnsInTableString='`'.implode('`,`', $remainingColumnsInTableArray).'`';
         $query=<<<SQL
         ALTER TABLE `$table` ADD COLUMN `old_id` int;
 
@@ -253,8 +256,8 @@ SQL;
         AFTER INSERT ON `$table`
         FOR EACH ROW
         BEGIN
-              INSERT INTO `$linkTable` (`$linkTableLinkCol`, $remainingColumnsInLinkTable)
-                    SELECT new.$linkCol, $remainingColumnsInLinkTable
+              INSERT INTO `$linkTable` (`$linkTableLinkCol`, $remainingColumnsInLinkTableString)
+                    SELECT new.$linkCol, $remainingColumnsInLinkTableString
                     FROM `$linkTable`
                     WHERE `$linkTableLinkCol`=new.old_id;
         End;
@@ -275,14 +278,14 @@ SQL;
             $query.=", `$tableColumnsToSplitArray[$i]`";
         }
         $query.=<<<SQL
-, $remainingColumnsInTable,`old_id`)
+, $remainingColumnsInTableString,`old_id`)
                             SELECT REGEXP_REPLACE(`$tableColumnsToSplitArray[0]`,'^.*$charactersArray[0]','')
 SQL;
         for ($i = 1; $i < count($tableColumnsToSplitArray) ; $i++) {
             $query.=", REGEXP_REPLACE(`$tableColumnsToSplitArray[$i]`,'^.*$charactersArray[$i]','')";
         }
     $query.=<<<SQL
-, $remainingColumnsInTable, `id`
+, $remainingColumnsInTableString, `id`
                         FROM `$tempTable`
                         WHERE `$tableColumnsToSplitArray[0]` LIKE '%$charactersArray[0]%';
                     -- remove current word

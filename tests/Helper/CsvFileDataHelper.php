@@ -31,6 +31,9 @@ class CsvFileDataHelper
             for ($i = 0; $i < ($headerCount-count($a)); $i++) {
                 $a[]='';
             }
+            if($headerCount < count($a)) {
+                throw new \Exception("too many columns in file for column with below data:\n".implode(' | ', $a));
+            }
             $a = array_combine($header, $a);
         });
         return $data;

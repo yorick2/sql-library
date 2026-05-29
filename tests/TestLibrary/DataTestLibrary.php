@@ -21,10 +21,19 @@ class DataTestLibrary extends TestCase
     /**
      * @param string $tableName
      * @param string $localFilePath
+     * @param array $header
+     * @param string $separator
      * @param bool $includeCsvRowCount
-     * @return DataTestLibrary
+     * @return $this
+     * @throws \Exception
      */
-    public function compareTableToCsvData(string $tableName, string $localFilePath, array $header=[], string $separator=',', bool $includeCsvRowCount=true): DataTestLibrary
+    public function compareTableToCsvData(
+        string $tableName,
+        string $localFilePath,
+        array $header=[],
+        string $separator=',',
+        bool $includeCsvRowCount=true
+    ): DataTestLibrary
     {
         $databaseData=DatabaseSqlHelper::getInstance()->getConnection()
             ->query('SELECT * FROM `'.$tableName.'`')
@@ -76,7 +85,7 @@ class DataTestLibrary extends TestCase
         $this->assertEquals(
             0,
             count($missing),
-            "Database query didnt match csv '$localFilePath' data\n\nquery:\n$query"
+            "Database query didnt match csv '$localFilePath' data;\nData: ".json_encode($missing, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)."\n\nquery:\n$query\n\n"
         );
         return $this;
     }

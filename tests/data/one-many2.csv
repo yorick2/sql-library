@@ -1,0 +1,6 @@
+text1,text1b,text2,text2b,text3,text3b,text4,text4b
+test1,foo,bar,baz,foobar,foobaz,barbar3,barbaz2
+test1,foo2,bar2,,foobar,,barbar2,barbaz3
+test1,foo3,bar3,baz3,foobar2,foobaz2,barbar,
+test2,,bar4,,foobar,foobaz,barbar,
+test3,,bar,,foobar3,foobaz,barbar3,barbaz5
