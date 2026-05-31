@@ -63,7 +63,7 @@ class ManyManyImporter
         DROP TRIGGER IF EXISTS `from_load_data_to_table2`;
         DROP TRIGGER IF EXISTS `from_load_data_to_table3`;
         
-        CREATE TABLE `$tempTable` AS
+        CREATE TABLE `$tempTable` AS (
                 SELECT *
                 FROM `$dataTableNames[0]`
                 
@@ -72,7 +72,8 @@ SQL;
             $query.="NATURAL JOIN `$dataTableNames[$i]`\n";
         }
         $query.=<<<SQL
-                LIMIT 0;
+                LIMIT 0
+        );
         
         ALTER TABLE `$tempTable` MODIFY `id` INT PRIMARY KEY AUTO_INCREMENT;
         ALTER TABLE `$tempTable` AUTO_INCREMENT = $startID;
@@ -190,11 +191,12 @@ SQL;
         DROP TRIGGER IF EXISTS `from_load_data_to_table2`;
         DROP TRIGGER IF EXISTS `from_load_data_to_table3`;
 
-        CREATE TABLE `$tempTable` AS
+        CREATE TABLE `$tempTable` AS (
                 SELECT *
                 FROM `$table1`
                 NATURAL JOIN `$table2`
-                LIMIT 0;
+                LIMIT 0
+        );
         ALTER TABLE `$tempTable` MODIFY `id` INT PRIMARY KEY AUTO_INCREMENT;
         ALTER TABLE `$tempTable` AUTO_INCREMENT = $startID;
 

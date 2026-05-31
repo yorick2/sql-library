@@ -51,7 +51,7 @@ jobs:
         DATABASE_ENDPOINT: 127.0.0.1
       run: |
         # ls ${{ github.workspace }}/tests/data/* " 
-        sudo cp tests/data/* /var/lib/mysql-files
+        sudo cp tests/data/* /var/lib/mysql-files/data
 
     - name: Copy php .env file
       run: |

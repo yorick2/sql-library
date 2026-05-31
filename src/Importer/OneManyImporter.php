@@ -49,11 +49,12 @@ class OneManyImporter
         DROP TRIGGER IF EXISTS `from_load_data_to_table1`;
         DROP TRIGGER IF EXISTS `from_load_data_to_table2`;
 
-        CREATE TABLE `$tempTable` AS
+        CREATE TABLE `$tempTable` AS (
                 SELECT *
                 FROM `$table1`
                 NATURAL JOIN `$table2`
-                LIMIT 0;
+                LIMIT 0
+        );
 
         CREATE TRIGGER `from_load_data_to_table1` AFTER INSERT ON `$tempTable`
         FOR EACH ROW
@@ -130,11 +131,12 @@ SQL;
         return <<<SQL
         DROP TABLE IF EXISTS `$tempTable`;
 
-        CREATE TABLE `$tempTable` AS
+        CREATE TABLE `$tempTable` AS (
             SELECT $selections
             FROM `$destinationTable` d
             NATURAL JOIN `$referenceTable` r
-            LIMIT 0;
+            LIMIT 0
+        );
         
         LOAD DATA INFILE '$filePath'
             IGNORE INTO TABLE `$tempTable`
