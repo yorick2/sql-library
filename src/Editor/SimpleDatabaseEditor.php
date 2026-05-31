@@ -52,16 +52,17 @@ class SimpleDatabaseEditor
             $where = "$orderingColumn < t.$orderingColumn AND $column != 0";
         }
         return <<<SQL
-        CREATE TABLE $tempTable AS
-        SELECT t.$orderingColumn, (
-            SELECT $column
-            FROM `$table`
-            WHERE $where
-            ORDER BY $orderingColumn $ascText
-            LIMIT 1
-        ) AS $newColumn
-        FROM `$table` t
-        WHERE t.$column = 0;
+        CREATE TABLE $tempTable AS (
+            SELECT t.$orderingColumn, (
+                SELECT $column
+                FROM `$table`
+                WHERE $where
+                ORDER BY $orderingColumn $ascText
+                LIMIT 1
+            ) AS $newColumn
+            FROM `$table` t
+            WHERE t.$column = 0
+        );
 
         UPDATE $tempTable set $newColumn = 0 where $newColumn is NULL;
 

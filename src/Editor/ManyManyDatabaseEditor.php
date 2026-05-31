@@ -365,17 +365,18 @@ SQL;
 DROP TABLE IF EXISTS `temp`;
 
 -- get new and old ids
-CREATE table `$tempTable` AS
-    SELECT old_id, MIN(b_id) AS new_id
-	FROM
-  (     
-      SELECT 
-           a.`$linkColumn` AS old_id,
-           b.$linkColumn AS b_id
-       FROM `$table` a, `$table` b
-       WHERE a.`$linkColumn` $direction b.`$linkColumn` $queryAndStatement
-  ) AS t 
-	GROUP BY old_id ;
+CREATE table `$tempTable` AS (
+        SELECT old_id, MIN(b_id) AS new_id
+            FROM
+          (     
+              SELECT 
+                   a.`$linkColumn` AS old_id,
+                   b.$linkColumn AS b_id
+               FROM `$table` a, `$table` b
+               WHERE a.`$linkColumn` $direction b.`$linkColumn` $queryAndStatement
+          ) AS t 
+            GROUP BY old_id
+    );
 
 -- update link table
 UPDATE `$linkTable` as l

@@ -54,8 +54,8 @@ SQL;
         $query.=<<<SQL
         DROP TRIGGER IF EXISTS `from_load_data_to_pivot_table`;
 
-        CREATE TABLE `$tempTable` AS
-                SELECT *
+        CREATE TABLE `$tempTable` AS (
+            SELECT *
                 FROM `$linkedTables[0]`
 SQL;
         for ($i = 1; $i < count($linkedTables); $i++){
@@ -63,7 +63,7 @@ SQL;
         }
         $query.="\n";
         $query.=<<<SQL
-                LIMIT 0;
+                LIMIT 0);
         ALTER TABLE `$tempTable` MODIFY `id` INT PRIMARY KEY AUTO_INCREMENT;
         ALTER TABLE `$tempTable` AUTO_INCREMENT = $startID;
 SQL;
@@ -162,8 +162,8 @@ SQL;
             $query.="\nDROP TRIGGER IF EXISTS `from_load_data_to_table$i`;";
         }
             $query.=<<<SQL
-        CREATE TABLE `$tempTable` AS
-                SELECT *
+        CREATE TABLE `$tempTable` AS (
+            SELECT *
                 FROM `$linkedTableNames[0]`
                 
 SQL;
@@ -171,7 +171,7 @@ SQL;
             $query.="NATURAL JOIN `$linkedTableNames[$i]`\n";
         }
         $query.=<<<SQL
-                LIMIT 0;
+                LIMIT 0);
         
         ALTER TABLE `$tempTable` MODIFY `id` INT PRIMARY KEY AUTO_INCREMENT;
 SQL;

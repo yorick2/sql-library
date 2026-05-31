@@ -53,8 +53,8 @@ SQL;
         }
         $query.="\n\n";
         $query.=<<<SQL
-        CREATE TABLE `$tempTable` AS
-                SELECT *
+        CREATE TABLE `$tempTable` AS (
+            SELECT *
                 FROM `$mainTable`
 SQL;
         for ($i = 0; $i < count($linkedTableNameArray); $i++) {
@@ -62,7 +62,7 @@ SQL;
             }
         $query.="\n";
         $query.=<<<SQL
-                LIMIT 0;
+                LIMIT 0);
         ALTER TABLE `$tempTable` MODIFY `id` INT PRIMARY KEY AUTO_INCREMENT;
         ALTER TABLE `$tempTable` AUTO_INCREMENT = $startID;
 SQL;
@@ -153,8 +153,8 @@ SQL;
         }
         $query.="\n\n";
         $query.=<<<SQL
-    CREATE TABLE `$tempTable` AS
-            SELECT *
+    CREATE TABLE `$tempTable` AS (
+        SELECT *
             FROM `$mainTable`
 SQL;
         for ($i = 0; $i < count($linkedTableNameArray); $i++) {
@@ -162,7 +162,7 @@ SQL;
         }
         $query.="\n";
         $query.=<<<SQL
-                LIMIT 0;
+                LIMIT 0);
         
         ALTER TABLE `$tempTable` MODIFY `id` INT PRIMARY KEY AUTO_INCREMENT;
 SQL;
@@ -274,12 +274,12 @@ SQL;
         return <<<SQL
         DROP TABLE IF EXISTS `$tempTable`;
 
-        CREATE TABLE `$tempTable` AS
+        CREATE TABLE `$tempTable` AS (
             SELECT $selections
-            FROM `$destinationTable` d
-            NATURAL JOIN `$referenceTable` r
-            LIMIT 0;
-        
+                FROM `$destinationTable` d
+                NATURAL JOIN `$referenceTable` r
+                LIMIT 0);
+            
         LOAD DATA INFILE '$filePath'
             IGNORE INTO TABLE `$tempTable`
             FIELDS TERMINATED BY '$fileDelimiter'
