@@ -113,6 +113,14 @@ Delete rows from 2 tables linked together, leaving the defined qty of rows. Leav
 src/reducer/OneManyImporter.php 
 src/reducer/ManyManyImporter.php
 
+## Debug
+### importing from files
+ensure secure_file_priv is set to your file upload folder
+
+```
+SHOW VARIABLES LIKE "secure_file_priv";
+```
+
 ## Testing
 ### native
 add test files to a native setup for sql to import during tests
