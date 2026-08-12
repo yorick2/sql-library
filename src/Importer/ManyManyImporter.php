@@ -240,6 +240,7 @@ SQL;
      * @param string $newTableLinkColumn
      * @param string $pivotTable
      * @param array $additionalPivotTableColumns
+     * @param array $additionalPivotTableValues
      * @param string $referenceTable
      * @param string $referenceLinkColumn
      * @param string $whereStatement
@@ -255,6 +256,7 @@ SQL;
         string $newTableLinkColumn,
         string $pivotTable,
         array  $additionalPivotTableColumns,
+        array  $additionalPivotTableValues,
         string $referenceTable,
         string $referenceLinkColumn,
         string $whereStatement,
@@ -267,7 +269,7 @@ SQL;
     {
         if(count($additionalPivotTableColumns)){
             $columnsForTableString='`'.$referenceLinkColumn.'`, `'.$newTableLinkColumn.'`, `'.implode('`,`', $additionalPivotTableColumns[$i]).'`';
-            $valueColumnsForTableString='id, NEW.`id`, NEW.`'.implode('`, NEW.`', $additionalPivotTableColumns[$i]).'`';
+            $valueColumnsForTableString='id, NEW.`id`, NEW.`'.implode('`, NEW.`', $additionalPivotTableValues[$i]).'`';
         }else{
             $columnsForTableString='`'.$referenceLinkColumn.'`, `'.$newTableLinkColumn.'`';
             $valueColumnsForTableString='id, NEW.`id`';

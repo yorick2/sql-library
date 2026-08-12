@@ -234,17 +234,18 @@ SQL;
 
         $query = ManyManyImporter::getImportNewTableAndLinkTableSqlText(
             'table2',
-        'table2_id',
-        'link',
-        [],
+            'table2_id',
+            'link',
+            [],
+            [],
             'table1',
-        'table1_id',
-        '`id` = NEW.`id`',
+            'table1_id',
+            '`id` = NEW.`id`',
             $this->fileComplex2,
             ['id','text2'],
             0,
-        ',',
-        ''
+            ',',
+            ''
         );
         $this->db->multi_query($query);
         // do not remove. multi_query needs this to allow next query to run
