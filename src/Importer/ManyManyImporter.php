@@ -248,8 +248,7 @@ SQL;
      * @param int $ignoreLinesQty
      * @param string $fileDelimiter
      * @param string $additionalFileImportCommand
-     * @param string $tempTable
-     * @return void
+     * @return string
      */
     static function getImportNewTableAndLinkTableSqlText(
         string $newTable,
@@ -263,9 +262,9 @@ SQL;
         array  $fileColumns,
         int    $ignoreLinesQty=0,
         string $fileDelimiter='\t',
-        string $additionalFileImportCommand='',
-        string $tempTable='temp'
-    ){
+        string $additionalFileImportCommand=''
+    ):string
+    {
         if(count($additionalPivotTableColumns)){
             $columnsForTableString='`'.$referenceLinkColumn.'`, `'.$newTableLinkColumn.'`, `'.implode('`,`', $additionalPivotTableColumns[$i]).'`';
             $valueColumnsForTableString='id, NEW.`id`, NEW.`'.implode('`, NEW.`', $additionalPivotTableColumns[$i]).'`';
@@ -277,7 +276,8 @@ SQL;
         if ($ignoreLinesQty) {
             $ignoreLinesText = "IGNORE $ignoreLinesQty LINES\n";
         }
-        $query = <<<EOF
+        $fileColumnsString = implode(',', $fileColumns);
+        return <<<EOF
         ALTER TABLE `$newTable`
             ADD COLUMN pattern VARCHAR(250);
 
@@ -289,10 +289,10 @@ SQL;
              FROM `$referenceTable`
              WHERE $whereStatement;
 
-        LOAD DATA INFILE '$file'
+        LOAD DATA INFILE '$filePath'
         IGNORE INTO TABLE `$newTable`
         FIELDS TERMINATED BY '$fileDelimiter'
-        $ignoreLinesText($fileColumns)
+        $ignoreLinesText($fileColumnsString)
         $additionalFileImportCommand;
 
         ALTER TABLE `$newTable`

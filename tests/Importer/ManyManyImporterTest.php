@@ -16,6 +16,8 @@ class ManyManyImporterTest extends TestCase
     protected mysqli $db;
     protected string $localFileSimple = '../data/many-many-simple.tsv';
     protected string $localFileComplex = '../data/many-many-complex.tsv';
+    protected string $localFileComplex2 = '../data/many-many-complex-2.tsv';
+    protected string $localFileComplexPivot3 = '../data/many-many-complex-pivot3.tsv';
     protected string $localFileComplexDesired = '../data/many-many-complex-desired.tsv';
     protected string $localFileComplexDesired2 = '../data/many-many-complex-desired2.tsv';
     protected string $fileSimple = '/var/lib/mysql-files/data/many-many-simple.tsv';
@@ -223,7 +225,7 @@ SQL;
         $query = SimpleImporter::getSqlText(
             'table1',
             $this->fileComplex1,
-            ['id','text1','text1b','text2c'],
+            ['id','text1','text1b','text1c'],
         );
         $this->db->multi_query($query);
         // do not remove. multi_query needs this to allow next query to run
@@ -238,31 +240,30 @@ SQL;
             'table1',
         'table1_id',
         '`id` = NEW.`id`',
-            __DIR__.'/'.$this->fileComplex2,
+            $this->fileComplex2,
             ['id','text2'],
-            1,
+            0,
         ',',
-        '',
-        'temp'
+        ''
         );
         $this->db->multi_query($query);
         // do not remove. multi_query needs this to allow next query to run
         do {
         } while ($this->db->next_result());
-        $this->assertEquals(6, $this->db->query('SELECT * FROM `link`')->num_rows);
-        $this->assertEquals(3, $this->db->query('SELECT * FROM `table1`')->num_rows);
+        $this->assertEquals(4, $this->db->query('SELECT * FROM `link`')->num_rows);
+        $this->assertEquals(4, $this->db->query('SELECT * FROM `table1`')->num_rows);
         $this->assertEquals(4, $this->db->query('SELECT * FROM `table2`')->num_rows);
         (new DataTestLibrary($this->name()))
             ->compareTableToCsvData(
                 'table1',
-                __DIR__.'/'.$this->fileComplex2,
-                [],
+                __DIR__.'/'.$this->localFileComplex2,
+                ['id','text2'],
                 "\t",
                 false
             )
             ->compareTableToCsvData(
                 'link',
-                __DIR__.'/'.$this->fileComplexPivot2,
+                __DIR__.'/'.$this->localFileComplexPivot3,
                 ['table1_id','table2_id'],
                 "\t",
                 false

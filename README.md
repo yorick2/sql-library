@@ -105,6 +105,7 @@ src/Importer/OneManyImporter.php    import 2 tables of data in a csv, linked by 
   
 src/Importer/ManyManyImporter.php   import 2 tables of data in a csv, linked by a 3rd pivot table
 - getSqlText() : generate SQL to import a simple 1-1 
+- getImportNewTableAndLinkTableSqlText() : Import into the $newTable and fill in the $pivotTable to link to the $referenceTable
 - getPivotTableImportSqlText() : generate SQL to import pivot table
 
 ## Reducers
@@ -156,3 +157,4 @@ add test files to docker sql instance to import during tests
 docker cp "<<path to repo>>/tests/data" /var/lib/mysql-files
 e.g.
 docker cp "<<path to repo>>/tests/data" mysql_1:/var/lib/mysql-files
+docker cp "${PWD}/tests/data" mysql_1:/var/lib/mysql-files
