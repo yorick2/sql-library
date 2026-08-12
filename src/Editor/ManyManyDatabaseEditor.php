@@ -78,12 +78,13 @@ SQL;
      * @param string $linkCol
      * @param string $linkTable
      * @param string $linkTableLinkCol
-     * @param array $remainingColumnsInLinkTable
+     * @param array $remainingColumnsInLinkTable e .g. ['col3','col4','col5']
      * @param string $tableColumnToSplit
      * @param array $remainingColumnsInTable e.g. ['table1_id','text2b']
      * @param string $additionalLoopCommand
      * @param string $tempTable
      * @param int $maxIterations
+     * @param string $oldId
      * @return string
      */
     static function getSplitRecordsWithCommasSqlText(
@@ -96,7 +97,8 @@ SQL;
         array $remainingColumnsInTable,
         string $additionalLoopCommand = '',
         string $tempTable = 'temp',
-        int    $maxIterations = 10000
+        int    $maxIterations = 10000,
+        string $oldId
     ): string
     {
         return self::getSplitRecordsWithCharacterSqlText(
@@ -109,8 +111,9 @@ SQL;
             $remainingColumnsInTable,
             ',',
             $additionalLoopCommand,
-            $tempTable = 'temp',
-            $maxIterations = 10000
+            $tempTable,
+            $maxIterations,
+            $oldId
         );
     }
 
@@ -126,6 +129,7 @@ SQL;
      * @param string $additionalLoopCommand
      * @param string $tempTable
      * @param int $maxIterations
+     * @param string $oldId
      * @return string
      */
     static function getSplitRecordsWithCharacterSqlText(
@@ -139,13 +143,14 @@ SQL;
         string $character = ',',
         string $additionalLoopCommand = '',
         string $tempTable = 'temp',
-        int    $maxIterations = 10000
+        int    $maxIterations = 10000,
+        string $oldId = 'old_id'
     ): string
     {
         $remainingColumnsInTableString='`'.implode('`,`', $remainingColumnsInTableArray).'`';
         $remainingColumnsInLinkTableString='`'.implode('`,`', $remainingColumnsInLinkTableArray).'`';
         return<<<SQL
-        ALTER TABLE `$table` ADD COLUMN `old_id` int;
+        ALTER TABLE `$table` ADD COLUMN `$oldId` int;
 
         DROP TABLE IF EXISTS `$tempTable`;
         DROP TRIGGER IF EXISTS `updatePivotTable`;
@@ -163,7 +168,7 @@ SQL;
               INSERT INTO `$linkTable` (`$linkTableLinkCol`, $remainingColumnsInLinkTableString)
                     SELECT new.$linkCol, $remainingColumnsInLinkTableString
                     FROM `$linkTable`
-                    WHERE `$linkTableLinkCol`=new.old_id;
+                    WHERE `$linkTableLinkCol`=new.$oldId;
         End;
 
         DROP PROCEDURE IF EXISTS temp_insert_split_by_comma;
@@ -176,7 +181,7 @@ SQL;
                     -- infinite loop safeguard
                     SET i = i + 1;
                     -- add first word in each row to the word
-                    INSERT INTO `$table` (`$tableColumnToSplit`, $remainingColumnsInTableString,`old_id`)
+                    INSERT INTO `$table` (`$tableColumnToSplit`, $remainingColumnsInTableString,`$oldId`)
                         SELECT REGEXP_REPLACE(`$tableColumnToSplit`,'^.*$character',''), $remainingColumnsInTableString, `id`
                         FROM `$tempTable`
                         WHERE `$tableColumnToSplit` LIKE '%$character%';
@@ -200,7 +205,7 @@ SQL;
         UPDATE `$table`
             SET `$tableColumnToSplit` = REGEXP_REPLACE(`$tableColumnToSplit`,'^.*{$character}','');
            
-        ALTER TABLE `$table` DROP COLUMN `old_id`;
+        ALTER TABLE `$table` DROP COLUMN `$oldId`;
         DROP TABLE IF EXISTS `$tempTable`;
         DROP TRIGGER IF EXISTS `updatePivotTable`;
 SQL;
@@ -218,6 +223,7 @@ SQL;
      * @param string $additionalLoopCommand
      * @param string $tempTable
      * @param int $maxIterations
+     * @param string $oldId
      * @return string
      * @throws \Exception
      */
@@ -226,22 +232,23 @@ SQL;
         string $linkCol,
         string $linkTable,
         string $linkTableLinkCol,
-        array $remainingColumnsInLinkTableArray,
+        array  $remainingColumnsInLinkTable,
         array  $tableColumnsToSplitArray,
-        array $remainingColumnsInTableArray,
+        array  $remainingColumnsInTable,
         array  $charactersArray = [',',','],
         string $additionalLoopCommand = '',
         string $tempTable = 'temp',
-        int    $maxIterations = 10000
+        int    $maxIterations = 10000,
+        string $oldId = 'old_id'
     ): string
     {
         if(count($tableColumnsToSplitArray) !== count($charactersArray)) {
             throw new \Exception('$charactersArray & $tableColumnsToSplitArray are different length');
         }
-        $remainingColumnsInLinkTableString='`'.implode('`,`', $remainingColumnsInLinkTableArray).'`';
-        $remainingColumnsInTableString='`'.implode('`,`', $remainingColumnsInTableArray).'`';
+        $remainingColumnsInLinkTableString='`'.implode('`,`', $remainingColumnsInLinkTable).'`';
+        $remainingColumnsInTableString='`'.implode('`,`', $remainingColumnsInTable).'`';
         $query=<<<SQL
-        ALTER TABLE `$table` ADD COLUMN `old_id` int;
+        ALTER TABLE `$table` ADD COLUMN `$oldId` int;
 
         DROP TABLE IF EXISTS `$tempTable`;
         DROP TRIGGER IF EXISTS `updatePivotTable`;
@@ -259,7 +266,7 @@ SQL;
               INSERT INTO `$linkTable` (`$linkTableLinkCol`, $remainingColumnsInLinkTableString)
                     SELECT new.$linkCol, $remainingColumnsInLinkTableString
                     FROM `$linkTable`
-                    WHERE `$linkTableLinkCol`=new.old_id;
+                    WHERE `$linkTableLinkCol`=new.$oldId;
         End;
 
         DROP PROCEDURE IF EXISTS temp_insert_split_by_comma;
@@ -278,7 +285,7 @@ SQL;
             $query.=", `$tableColumnsToSplitArray[$i]`";
         }
         $query.=<<<SQL
-, $remainingColumnsInTableString,`old_id`)
+, $remainingColumnsInTableString,`$oldId`)
                             SELECT REGEXP_REPLACE(`$tableColumnsToSplitArray[0]`,'^.*$charactersArray[0]','')
 SQL;
         for ($i = 1; $i < count($tableColumnsToSplitArray) ; $i++) {
@@ -317,7 +324,7 @@ SQL;
         }
         $query.=";\n";
         $query .= <<<SQL
-        ALTER TABLE `$table` DROP COLUMN `old_id`;
+        ALTER TABLE `$table` DROP COLUMN `$oldId`;
         DROP TABLE IF EXISTS `$tempTable`;
         DROP TRIGGER IF EXISTS `updatePivotTable`;
 SQL;
@@ -335,6 +342,7 @@ SQL;
      * @param string $orderColumn
      * @param bool $orderAscending
      * @param string $tempTable
+     * @param string $oldId
      * @return string
      */
     static function getReassignAndRemoveDuplicatesSqlText(
@@ -346,7 +354,8 @@ SQL;
         array  $remainingLinkTableColumns,
         string $orderColumn='id',
         bool   $orderAscending=true,
-        string $tempTable='temp'
+        string $tempTable='temp',
+        string $oldId = 'old_id'
     ) :string
     {
         if($orderAscending){
@@ -366,21 +375,21 @@ DROP TABLE IF EXISTS `temp`;
 
 -- get new and old ids
 CREATE table `$tempTable` AS (
-        SELECT old_id, MIN(b_id) AS new_id
+        SELECT $oldId, MIN(b_id) AS new_id
             FROM
           (     
               SELECT 
-                   a.`$linkColumn` AS old_id,
+                   a.`$linkColumn` AS $oldId,
                    b.$linkColumn AS b_id
                FROM `$table` a, `$table` b
                WHERE a.`$linkColumn` $direction b.`$linkColumn` $queryAndStatement
           ) AS t 
-            GROUP BY old_id
+            GROUP BY $oldId
     );
 
 -- update link table
 UPDATE `$linkTable` as l
-JOIN `$tempTable` as t ON (l.$linkTableLinkColumn = t.old_id)
+JOIN `$tempTable` as t ON (l.$linkTableLinkColumn = t.$oldId)
 SET l.$linkTableLinkColumn = t.new_id;
 
 -- remove duplicates from link table
