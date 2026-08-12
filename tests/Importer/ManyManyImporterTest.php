@@ -213,6 +213,62 @@ SQL;
             );
     }
 
+    public function test_getImportNewTableAndLinkTableSqlText()
+    {
+        $this->assertFilesExistLocally([__DIR__.'/'.$this->localFileComplex]);
+        $this->assertFilesExistOnSqlServer([$this->fileComplex]);
+        $this->assertEquals(0, $this->db->query('SELECT * FROM `link` LIMIT 1')->num_rows);
+        $this->assertEquals(0, $this->db->query('SELECT * FROM `table1` LIMIT 1')->num_rows);
+        $this->assertEquals(0, $this->db->query('SELECT * FROM `table2` LIMIT 1')->num_rows);
+        $query = SimpleImporter::getSqlText(
+            'table1',
+            $this->fileComplex1,
+            ['id','text1','text1b','text2c'],
+        );
+        $this->db->multi_query($query);
+        // do not remove. multi_query needs this to allow next query to run
+        do {
+        } while ($this->db->next_result());
+
+        $query = ManyManyImporter::getImportNewTableAndLinkTableSqlText(
+            'table2',
+        'table2_id',
+        'link',
+        [],
+            'table1',
+        'table1_id',
+        '`id` = NEW.`id`',
+            __DIR__.'/'.$this->fileComplex2,
+            ['id','text2'],
+            1,
+        ',',
+        '',
+        'temp'
+        );
+        $this->db->multi_query($query);
+        // do not remove. multi_query needs this to allow next query to run
+        do {
+        } while ($this->db->next_result());
+        $this->assertEquals(6, $this->db->query('SELECT * FROM `link`')->num_rows);
+        $this->assertEquals(3, $this->db->query('SELECT * FROM `table1`')->num_rows);
+        $this->assertEquals(4, $this->db->query('SELECT * FROM `table2`')->num_rows);
+        (new DataTestLibrary($this->name()))
+            ->compareTableToCsvData(
+                'table1',
+                __DIR__.'/'.$this->fileComplex2,
+                [],
+                "\t",
+                false
+            )
+            ->compareTableToCsvData(
+                'link',
+                __DIR__.'/'.$this->fileComplexPivot2,
+                ['table1_id','table2_id'],
+                "\t",
+                false
+            );
+    }
+
     public function test_getPivotTableImportSqlText_works(): void
     {
         $this->assertFilesExistLocally([__DIR__.'/'.$this->localFileComplexDesired]);

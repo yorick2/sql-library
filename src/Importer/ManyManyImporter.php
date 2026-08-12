@@ -165,14 +165,14 @@ SQL;
         CREATE TABLE `$tempTable` AS (
             SELECT *
                 FROM `$linkedTableNames[0]`
-                
+
 SQL;
         for ($i = 1; $i < count($linkedTableNames); $i++) {
             $query.="NATURAL JOIN `$linkedTableNames[$i]`\n";
         }
         $query.=<<<SQL
                 LIMIT 0);
-        
+
         ALTER TABLE `$tempTable` MODIFY `id` INT PRIMARY KEY AUTO_INCREMENT;
 SQL;
         for ($i = 0; $i < count($tableColumnsForLinkedTables); $i++) {
@@ -181,7 +181,7 @@ SQL;
             $query.=<<<SQL
 
             Alter TABLE `temp` ADD COLUMN `$pivotTableColumns[$i]` int;
-            
+
             CREATE TRIGGER `from_load_data_to_table$i`
             BEFORE INSERT ON `$tempTable`
             FOR EACH ROW
@@ -191,7 +191,7 @@ SQL;
                         VALUES ($valueColumnsForDataTablesImploded);
                 END IF;
             End;
-            
+
 SQL;
         }
         $query.=<<<SQL
@@ -201,11 +201,11 @@ SQL;
         FIELDS TERMINATED BY '$fileDelimiter'
         $ignoreLinesText($fileColumnsString)
         $additionalFileImportCommand;
-        
+
 SQL;
         for ($i = 0; $i < count($linkedTableNames); $i++) {
             $query.=<<<SQL
-            
+
             UPDATE
             `$tempTable` tmp$i
             JOIN
@@ -220,9 +220,9 @@ SQL;
         $cols=implode('`,`', $pivotTableColumns);
         $query.="\n".<<<SQL
         INSERT INTO `$pivotTable` (`$cols`)
-          SELECT `$cols` 
+          SELECT `$cols`
           FROM `$tempTable`;
-        
+
         # cleanup
         SET FOREIGN_KEY_CHECKS=1;
         DROP TABLE IF EXISTS `$tempTable`;
@@ -231,6 +231,74 @@ SQL;
             $query.="\nDROP TRIGGER IF EXISTS `from_load_data_to_table$i`;";
         }
         return $query;
+    }
+
+    /**
+     * Import into the $newTable and fill in the $pivotTable to link to the $referenceTable
+     *
+     * @param string $newTable
+     * @param string $newTableLinkColumn
+     * @param string $pivotTable
+     * @param array $additionalPivotTableColumns
+     * @param string $referenceTable
+     * @param string $referenceLinkColumn
+     * @param string $whereStatement
+     * @param string $filePath
+     * @param array $fileColumns
+     * @param int $ignoreLinesQty
+     * @param string $fileDelimiter
+     * @param string $additionalFileImportCommand
+     * @param string $tempTable
+     * @return void
+     */
+    static function getImportNewTableAndLinkTableSqlText(
+        string $newTable,
+        string $newTableLinkColumn,
+        string $pivotTable,
+        array  $additionalPivotTableColumns,
+        string $referenceTable,
+        string $referenceLinkColumn,
+        string $whereStatement,
+        string $filePath,
+        array  $fileColumns,
+        int    $ignoreLinesQty=0,
+        string $fileDelimiter='\t',
+        string $additionalFileImportCommand='',
+        string $tempTable='temp'
+    ){
+        if(count($additionalPivotTableColumns)){
+            $columnsForTableString='`'.$referenceLinkColumn.'`, `'.$newTableLinkColumn.'`, `'.implode('`,`', $additionalPivotTableColumns[$i]).'`';
+            $valueColumnsForTableString='id, NEW.`id`, NEW.`'.implode('`, NEW.`', $additionalPivotTableColumns[$i]).'`';
+        }else{
+            $columnsForTableString='`'.$referenceLinkColumn.'`, `'.$newTableLinkColumn.'`';
+            $valueColumnsForTableString='id, NEW.`id`';
+        }
+        $ignoreLinesText = '';
+        if ($ignoreLinesQty) {
+            $ignoreLinesText = "IGNORE $ignoreLinesQty LINES\n";
+        }
+        $query = <<<EOF
+        ALTER TABLE `$newTable`
+            ADD COLUMN pattern VARCHAR(250);
+
+        DROP TRIGGER IF EXISTS `from_load_data`;
+        CREATE TRIGGER `from_load_data` AFTER INSERT ON `$newTable`
+        FOR EACH ROW
+           INSERT INTO `$pivotTable` ($columnsForTableString)
+           SELECT $valueColumnsForTableString
+             FROM `$referenceTable`
+             WHERE $whereStatement;
+
+        LOAD DATA INFILE '$file'
+        IGNORE INTO TABLE `$newTable`
+        FIELDS TERMINATED BY '$fileDelimiter'
+        $ignoreLinesText($fileColumns)
+        $additionalFileImportCommand;
+
+        ALTER TABLE `$newTable`
+            DROP COLUMN pattern;
+        DROP TRIGGER IF EXISTS `from_load_data`;
+EOF;
     }
 
     /**
