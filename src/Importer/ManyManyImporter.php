@@ -268,8 +268,8 @@ SQL;
     ):string
     {
         if(count($additionalPivotTableColumns)){
-            $columnsForTableString='`'.$referenceLinkColumn.'`, `'.$newTableLinkColumn.'`, `'.implode('`,`', $additionalPivotTableColumns[$i]).'`';
-            $valueColumnsForTableString='id, NEW.`id`, NEW.`'.implode('`, NEW.`', $additionalPivotTableValues[$i]).'`';
+            $columnsForTableString='`'.$referenceLinkColumn.'`, `'.$newTableLinkColumn.'`, `'.implode('`,`', $additionalPivotTableColumns).'`';
+            $valueColumnsForTableString='id, NEW.`id`, NEW.`'.implode('`, NEW.`', $additionalPivotTableValues).'`';
         }else{
             $columnsForTableString='`'.$referenceLinkColumn.'`, `'.$newTableLinkColumn.'`';
             $valueColumnsForTableString='id, NEW.`id`';

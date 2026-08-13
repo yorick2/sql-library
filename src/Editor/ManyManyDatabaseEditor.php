@@ -277,7 +277,7 @@ SQL;
      * @param string $orderColumn
      * @param bool $orderAscending
      * @param string $tempTable
-     * @param string $oldId
+     * @param string $oldId a placeholder, editable to stop comflicts
      * @return string
      */
     static function getReassignAndRemoveDuplicatesSqlText(
