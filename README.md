@@ -115,7 +115,7 @@ src/reducer/ManyManyImporter.php
 
 ## Editors
 src/Editor/ManyManyDatabaseEditor.php
-getSetColumnValueAsLastValueIfNotSetSqlTriggerText() :
+getSetColumnValueAsLastValueSqlText() :
 getSetColumnValueAsLastValueWhenNotSetSqlText() :
 getSplitRecordsWithCommasSqlText() :
 getSplitRecordsWithCharacterSqlText() :
@@ -123,7 +123,7 @@ getSplitRecordsWithMultipleColumnsSqlText() :
 getReassignAndRemoveDuplicatesSqlText() :
 
 src/Editor/SimpleDatabaseEditor.php
-getSetColumnValueAsLastValueIfNotSetSqlTriggerText() :
+getSetColumnValueAsLastValueSqlText() :
 getSetColumnValueAsLastValueWhenNotSetSqlText() :
 getTriggerSqlText() :
 getTriggerIfElseSqlText() :

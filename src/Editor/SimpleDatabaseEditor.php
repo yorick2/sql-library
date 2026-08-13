@@ -14,12 +14,11 @@ class SimpleDatabaseEditor
      * @param boolean $orderAsc
      * @return string
      */
-    static function getSetColumnValueAsLastValueIfNotSetSqlTriggerText(
+    static function getSetColumnValueAsLastValueSqlText(
         string $table,
         string $column,
         string $orderingColumn='id',
         bool $orderAsc=true,
-        string $tempTable = 'temp'
     ): string
     {
         if ($orderAsc){
@@ -34,6 +33,7 @@ class SimpleDatabaseEditor
          * @param string $column
          * @param string $orderingColumn
          * @param boolean $orderAsc
+         * @param string $tempTable
          * @return string
          */
         static function getSetColumnValueAsLastValueWhenNotSetSqlText(
