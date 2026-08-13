@@ -182,7 +182,7 @@ SQL;
         int    $maxIterations = 10000
     ): string
     {
-        return self::getSplitRecordsWithMultipleCharacterColumnsSqlText(
+        return self::getSplitRecordsWithMultipleColumnsSqlText(
             $table,
             $tableMultipleColumnsToSplit,
             $remainingColumnsInTable,
@@ -284,7 +284,7 @@ SQL;
      * @param int $maxIterations
      * @return string
      */
-    static function getSplitRecordsWithMultipleCharacterColumnsSqlText(
+    static function getSplitRecordsWithMultipleColumnsSqlText(
         string $table,
         array  $tableMultipleColumnsToSplit,
         array  $remainingColumnsInTable,

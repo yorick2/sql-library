@@ -225,7 +225,7 @@ SQL;
             ;
         }
 
-        $query = SimpleDatabaseEditor::getSplitRecordsWithMultipleCharacterColumnsSqlText(
+        $query = SimpleDatabaseEditor::getSplitRecordsWithMultipleColumnsSqlText(
             $table,
             $splitCols,
             ['text1'],

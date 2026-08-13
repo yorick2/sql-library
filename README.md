@@ -130,7 +130,7 @@ getTriggerIfElseSqlText() :
 getSplitRecordsWithCommasSqlText() :
 getSplitRecordsWithMultipleCommaColumnsSqlText() :
 getSplitRecordsWithCharacterSqlText() :
-getSplitRecordsWithMultipleCharacterColumnsSqlText() :
+getSplitRecordsWithMultipleColumnsSqlText() :
 getRemoveLaterDuplicatesSqlText() :
 
 ## Misc Classes

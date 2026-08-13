@@ -31,7 +31,7 @@ class ManyManyDatabaseEditor
         string $additionalLoopCommand = '',
         string $tempTable = 'temp',
         int    $maxIterations = 10000,
-        string $oldId
+        string $oldId='old_id'
     ): string
     {
         return self::getSplitRecordsWithCharacterSqlText(
