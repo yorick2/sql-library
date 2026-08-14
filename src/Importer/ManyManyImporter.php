@@ -119,7 +119,7 @@ SQL;
      * @param array $linkedTableNames e.g. ['table1','table2','table3','table4'],
      * @param array $tableColumnsForLinkedTables e.g. [['id','text1','text1b','text1c'],['id','text2','text2b'],...]
      * @param array $valueColumnsForDataTables e.g. [['NEW.`id`','NEW.`text1`'],['NEW.`id`','NEW.`text2`'],...]
-     * @param array $linkColumns ['text1','text2',...]
+     * @param array $linkColumns used as a unique identifier for that row in the table  e.g. ['text1','text2',...]
      * @param string $filePath file path e.g. '__DIR__./src/test.tsv'
      * @param array $fileColumns e.g. ['column1','column2']
      * @param int    $ignoreLinesQty number of lines to ignore at the start of the file
