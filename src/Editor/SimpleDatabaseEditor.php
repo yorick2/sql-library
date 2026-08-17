@@ -153,8 +153,8 @@ SQL;
             $remainingColumnsInTable,
             ',',
             $additionalLoopCommand,
-            $tempTable = 'temp',
-            $maxIterations = 10000
+            $tempTable,
+            $maxIterations
         );
     }
 

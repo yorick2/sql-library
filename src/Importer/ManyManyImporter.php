@@ -180,7 +180,7 @@ SQL;
             $valueColumnsForDataTablesImploded='New.`'.implode('`, New.`',$tableColumnsForLinkedTables[$i]).'`';
             $query.=<<<SQL
 
-            Alter TABLE `temp` ADD COLUMN `$pivotTableColumns[$i]` int;
+            Alter TABLE `$tempTable` ADD COLUMN `$pivotTableColumns[$i]` int;
 
             CREATE TRIGGER `from_load_data_to_table$i`
             BEFORE INSERT ON `$tempTable`

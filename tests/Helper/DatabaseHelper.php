@@ -16,7 +16,7 @@ class DatabaseHelper
     {
         $db = DatabaseSqlHelper::getInstance()->getConnection();
         $query=<<<SQL
-            DROP TABLE IF EXISTS `temp`;
+            DROP TABLE IF EXISTS `tempTable`;
             DROP TABLE IF EXISTS `link`;
             DROP TABLE IF EXISTS `table1`;
             DROP TABLE IF EXISTS `table2`;

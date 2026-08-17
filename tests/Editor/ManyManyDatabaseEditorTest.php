@@ -164,7 +164,7 @@ SQL;
             $splitCol,
             ['text1b','text1c'],
             '',
-            'temp',
+            'tempTable',
             1000
         );
         $this->db->multi_query($query);
@@ -262,7 +262,7 @@ SQL;
             ['text1b','text1c'],
             $splitCharacter,
             '',
-            'temp',
+            'tempTable',
             1000
         );
         $this->db->multi_query($query);
@@ -349,7 +349,7 @@ SQL;
             ['text1c'],
             $splitCharacterArray,
             '',
-            'temp',
+            'tempTable',
             1000
         );
         $this->db->multi_query($query);
@@ -430,7 +430,7 @@ SQL;
                 ['table2_id','table3_id','table4_id'],
                 'id',
                 true,
-                'temp'
+                'tempTable'
             ).
             ManyManyDatabaseEditor::getReassignAndRemoveDuplicatesSqlText(
                 ['text2'],
@@ -441,7 +441,7 @@ SQL;
                 ['table1_id','table3_id','table4_id'],
                 'id',
                 true,
-                'temp'
+                'tempTable'
             );
         $this->db->multi_query($query);
         while ($this->db->next_result()) {

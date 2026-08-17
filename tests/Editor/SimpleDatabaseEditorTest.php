@@ -84,7 +84,7 @@ SQL;
             $splitCol,
             ['text1','text1c'],
             '',
-            'temp',
+            'tempTable',
             100
         );
         $result = $this->db->multi_query($query);
@@ -132,7 +132,7 @@ SQL;
             $splitCols,
             ['text1'],
             '',
-            'temp',
+            'tempTable',
             100
         );
         $result = $this->db->multi_query($query);
@@ -181,7 +181,7 @@ SQL;
             ['text1','text1c'],
             ';',
             '',
-            'temp',
+            'tempTable',
             100
         );
         $result = $this->db->multi_query($query);
@@ -231,7 +231,7 @@ SQL;
             ['text1'],
             ';',
             '',
-            'temp',
+            'tempTable',
             100
         );
         $result = $this->db->multi_query($query);
@@ -279,7 +279,7 @@ SQL;
             'text1b',
             'id',
             true,
-            'temp'
+            'tempTable'
         );
         $this->db->multi_query($query);
         // do not remove. multi_query needs this to allow next query to run
@@ -316,7 +316,7 @@ SQL;
             'text1b',
             'id',
             false,
-            'temp'
+            'tempTable'
         );
         $this->db->multi_query($query);
         // do not remove. multi_query needs this to allow next query to run

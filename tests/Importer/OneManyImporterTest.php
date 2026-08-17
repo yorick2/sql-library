@@ -105,7 +105,7 @@ SQL;
             1,
             ',',
             '',
-            'temp'
+            'tempTable'
         );
         $this->db->multi_query($query);
         // do not remove. multi_query needs this to allow next query to run
@@ -141,7 +141,7 @@ SQL;
             1,
             ',',
             '',
-            'temp'
+            'tempTable'
         );
         $this->db->multi_query($query);
         // do not remove. multi_query needs this to allow next query to run
@@ -185,7 +185,7 @@ SQL;
             1,
             ',',
             '',
-            'temp'
+            'tempTable'
         );
         $this->db->multi_query($query);
         // do not remove. multi_query needs this to allow next query to run
@@ -242,7 +242,7 @@ SQL;
                 1,
                 ',',
                 '',
-                'temp'
+                'tempTable'
             );
         $this->db->multi_query($query);
         // do not remove. multi_query needs this to allow next query to run
@@ -293,7 +293,7 @@ SQL;
                 1,
                 ',',
                 '',
-                'temp'
+                'tempTable'
             );
         $this->db->multi_query($query);
         // do not remove. multi_query needs this to allow next query to run

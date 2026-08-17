@@ -14,7 +14,7 @@ class TestCase extends PHPUnitTestCase
             ->query("Show tables")
             ->fetch_all( MYSQLI_ASSOC);
         foreach ($result as $row) {
-            $this->assertNotEquals('temp', $row['Tables_in_test'], 'temp table still exists');
+            $this->assertNotEquals('tempTable', $row['Tables_in_test'], 'tempTable table still exists');
         }
         parent::tearDown();
     }
@@ -27,7 +27,7 @@ class TestCase extends PHPUnitTestCase
     {
         $query=(new Files)->getMissingFilesFromSqlServer(
             $remoteFiles,
-            'temp'
+            'tempTable'
         );
         $this->db = DatabaseSqlHelper::getInstance()->getConnection();
         $this->db->multi_query($query);
