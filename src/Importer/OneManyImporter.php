@@ -15,7 +15,7 @@ class OneManyImporter
      * @param array  $linkedTableNameArray ['table2','table3',]
      * @param array  $columnsForLinkedTableArray [['text2','text2b'],['text3','text3b']]
      * @param string $filePath file path e.g. '__DIR__./src/test.tsv'
-     * @param array  $fileColumnsArray e.g. ['text1','text1b','text2','text2b','text3','text3b']
+     * @param array  $fileColumnsArray e.g. ['text1','text1b','text2','text2b','text3','text3b'] columns starting with @ are assigned to a variable and  are not imported e.g. @ignore_me
      * @param int    $ignoreLinesQty No. of lines to ignore in the file e.g. for the header
      * @param string $fileDelimiter e.g. '\t'
      * @param string $additionalFileImportCommand e.g. "set text1_simple = REGEXP_REPLACE(text1,'[1234]*','')"
@@ -41,7 +41,7 @@ class OneManyImporter
         if($ignoreLinesQty>0){
             $ignoreLinesText="IGNORE $ignoreLinesQty LINES\n";
         }
-        $fileColumnsString='`'.implode('`,`' ,$fileColumnsArray).'`';
+        $fileColumnsString=implode(',' ,$fileColumnsArray);
         $columnsForMainTableString='`'.implode('`,`' ,$columnsForMainTableArray).'`';
         $valuesForMainTableString='New.`'.implode('`, New.`' ,$columnsForMainTableArray).'`';
         $query=<<<SQL
@@ -117,7 +117,7 @@ SQL;
      * @param array $linkedTableNameArray e.g. ['table2', 'table3', 'table4']
      * @param array $tableColumnsForLinkedTables e.g. [['text2','text2b'],['text3','text3b'],['text4','text4b']],
      * @param string $filePath file path e.g. '__DIR__./src/test.tsv'
-     * @param array $fileColumnsArray e.g. ['column1', 'column2']
+     * @param array $fileColumnsArray e.g. ['column1', 'column2'] columns starting with @ are assigned to a variable and  are not imported e.g. @ignore_me
      * @param int $ignoreLinesQty No. of lines to ignore in the file e.g. for the header
      * @param string $fileDelimiter e.g. '\t'
      * @param string $additionalFileImportCommand e.g. "set simple = REGEXP_REPLACE(Word,'[1234]*','')"
@@ -143,7 +143,7 @@ SQL;
         if($ignoreLinesQty){
             $ignoreLinesText="IGNORE $ignoreLinesQty LINES\n";
         }
-        $fileColumnsString='`'.implode('`,`' ,$fileColumnsArray).'`';
+        $fileColumnsString=implode(',' ,$fileColumnsArray);
         $query=<<<SQL
     DROP TABLE IF EXISTS `$tempTable`;
     DROP TRIGGER IF EXISTS `from_load_data_to_main_table`;
@@ -233,7 +233,7 @@ SQL;
      * @param string $destinationTableLinkToReferenceTable e.g. 'table2_id'
      * @param string $referenceTableLinkToDestinationTable e.g. 'id'
      * @param string $filePath file path e.g. '__DIR__./src/test.tsv'
-     * @param array $fileColumnArray e.g. ['column1','column2']
+     * @param array $fileColumnArray e.g. ['column1','column2'] columns starting with @ are assigned to a variable and  are not imported e.g. @ignore_me
      * @param bool $fileLinkColumnExists add link column to table
      * @param int $ignoreLinesQty No . of lines to ignore in the file e.g. for the header
      * @param string $fileDelimiter e .g. '\t'
@@ -270,7 +270,7 @@ SQL;
             // adds a column with the column type of $referenceTableLinkToFile, but named $fileLinkToReferenceTable
             $selections = "d.*, r.`$referenceTableLinkToFile` As `$fileLinkToReferenceTable`";
         }
-        $fileColumnString='`'.implode('`,`' ,$fileColumnArray).'`';
+        $fileColumnString=implode(',' ,$fileColumnArray);
         return <<<SQL
         DROP TABLE IF EXISTS `$tempTable`;
 

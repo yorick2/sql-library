@@ -14,7 +14,7 @@ class ManyManyImporter
      * @param array  $linkedTables e.g. ['table1','table2']
      * @param array  $columnsForLinkedTablesArray e.g. [['text1','text1b'],['text2','text2b']]
      * @param string $filePath file path e.g. '__DIR__./src/test.tsv'
-     * @param array  $fileColumnsArray e.g. ['column1','column2']
+     * @param array  $fileColumnsArray e.g. ['column1','column2'] columns starting with @ are assigned to a variable and  are not imported e.g. @ignore_me
      * @param int    $startID
      * @param int    $ignoreLinesQty number of lines to ignore at the start of the file
      * @param string $fileDelimiter e.g. '\t'
@@ -41,7 +41,7 @@ class ManyManyImporter
             $ignoreLinesText="IGNORE $ignoreLinesQty LINES\n";
         }
         $pivotTableColumns='`'.implode('`,`', $pivotTableColumnsArray).'`';
-        $fileColumnsString='`'.implode('`,`', $fileColumnsArray).'`';
+        $fileColumnsString=implode(',', $fileColumnsArray);
         $query=<<<SQL
         # clean workspace
         SET FOREIGN_KEY_CHECKS=0;
@@ -121,7 +121,7 @@ SQL;
      * @param array $valueColumnsForDataTables e.g. [['NEW.`id`','NEW.`text1`'],['NEW.`id`','NEW.`text2`'],...]
      * @param array $linkColumns used as a unique identifier for that row in the table  e.g. ['text1','text2',...]
      * @param string $filePath file path e.g. '__DIR__./src/test.tsv'
-     * @param array $fileColumns e.g. ['column1','column2']
+     * @param array $fileColumns e.g. ['column1','column2'] columns starting with @ are assigned to a variable and  are not imported e.g. @ignore_me
      * @param int    $ignoreLinesQty number of lines to ignore at the start of the file
      * @param string $fileDelimiter e.g. '\t'
      * @param string $additionalFileImportCommand e.g. "set simple = REGEXP_REPLACE(Word,'[1234]*','')"
@@ -245,7 +245,7 @@ SQL;
      * @param string $referenceLinkColumn
      * @param string $whereStatement
      * @param string $filePath
-     * @param array $fileColumns
+     * @param array $fileColumns columns starting with @ are assigned to a variable and  are not imported e.g. @ignore_me
      * @param int $ignoreLinesQty
      * @param string $fileDelimiter
      * @param string $additionalFileImportCommand
@@ -309,7 +309,7 @@ EOF;
      *
      * @param string $pivotTable string e.g. 'table1_table2'
      * @param string $filePath file path e.g. '__DIR__./src/test.tsv'
-     * @param array $pivotTableColumns pivot table columns in the order of the related column in the file e.g. ['table1_id','table2_id']
+     * @param array $pivotTableColumns pivot table columns in the order of the related column in the file e.g. ['table1_id','table2_id']. columns starting with @ are assigned to a variable and  are not imported e.g. @ignore_me
      * @param array $tables tables in the order of the related column in the file e.g. ['table1','table2']
      * @param array $refColumns the column the tables to match the file data to. In the order of the related column in the file e.g. ['ref','ref']
      * @param int $ignoreLinesQty number of lines to ignore at the start of the file

@@ -9,7 +9,7 @@ class SimpleImporter
      *
      * @param string $table e.g. 'table1'
      * @param string $filePath file path e.g. '__DIR__./src/test.tsv'
-     * @param array $fileColumnsArray e.g. ['column1','column2']
+     * @param array $fileColumnsArray e.g. ['column1','column2'] columns starting with @ are assigned to a variable and  are not imported e.g. @ignore_me
      * @param int $ignoreLinesQty how many rows to ignore from table
      * @param string $fileDelimiter e.g. '\t'
      * @param string $additionalFileImportCommand e.g. "set simple = REGEXP_REPLACE(Word,'[1234]*','')"
@@ -24,7 +24,7 @@ class SimpleImporter
         string $additionalFileImportCommand = ''
     )
     {
-        $fileColumnsString='`'.implode('`,`', $fileColumnsArray).'`';
+        $fileColumnsString=implode(',', $fileColumnsArray);
         $ignoreLinesText = '';
         if ($ignoreLinesQty) {
             $ignoreLinesText = "IGNORE $ignoreLinesQty LINES\n";
